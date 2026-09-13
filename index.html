@@ -1077,6 +1077,9 @@ body.editing #settings-edit-mode{display:block !important}
 
 .pg-meta{display:flex;flex-wrap:wrap;gap:14px;align-items:center;font-size:11.5px;color:var(--text3);margin:0 0 14px;padding-bottom:12px;border-bottom:1px solid var(--border-l)}
 .pg-meta b{color:var(--text2);font-weight:600}
+.pg-daily{display:flex;flex-direction:column;line-height:1.3;gap:1px}
+.pg-daily-quote{font-size:12.5px;font-weight:600;color:var(--text2);letter-spacing:.01em}
+.pg-daily-date{font-size:10.5px;font-weight:500;color:var(--text3)}
 .pg-status{display:inline-flex;align-items:center;gap:5px;cursor:pointer;padding:3px 10px;border-radius:20px;background:var(--bg);border:1px solid var(--border);font-weight:600;color:var(--text2);transition:.15s;font-size:11.5px;user-select:none}
 .pg-status:hover{border-color:var(--amber);color:var(--amber-h)}
 .pg-status .dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
@@ -1734,7 +1737,7 @@ body.editing #settings-edit-mode{display:block !important}
     <div class="hero">
       <div class="hero-em">⭐</div>
       <div class="hero-gr" id="hero-greet">Assalaamu Calaykum,</div>
-      <div class="hero-nm" data-ed contenteditable="false">Cabdullaahi Maxamed Salaad!</div>
+      <div class="hero-nm" id="hero-nm">Isticmaale!</div>
       <div class="hero-sb" id="hero-date" data-ed contenteditable="false"></div>
       <div class="hero-sb" id="hero-hijri" style="opacity:.85"></div>
       <div class="hero-cl" id="clock">00:00:00</div>
@@ -6198,6 +6201,7 @@ function rtSoftRefresh(){
   if(typeof renderAllLogs === 'function') renderAllLogs();
   if(typeof renderBadgeScrollbar === 'function') renderBadgeScrollbar();
   if(typeof updateGreeting === 'function') updateGreeting();
+  if(typeof updateHeroName === 'function') updateHeroName();
   if(typeof ncUpdateBadge === 'function') ncUpdateBadge(); // qalab kale ayaa laga yaabaa inuu ogeysiis cusub soo saaray
   if(typeof renderWcList==='function') renderWcList();
   if(typeof renderWnList==='function') renderWnList();
@@ -6212,7 +6216,7 @@ function rtSoftRefresh(){
    la sameynayn. Waa "safety net", ma aha beddelka realtime-ka.
 ═══════════════════════════════════ */
 let POLL_SYNC_TIMER = null;
-async function pollSyncCheck(){
+async function pollSyncCheck(silent){
   const client = sbClient(); const syncId = sbSyncId();
   if(!client || !syncId) return;
   try{
@@ -6226,7 +6230,7 @@ async function pollSyncCheck(){
     D._updated_at = remoteTime;
     try{ localStorage.setItem('noloshayda_v3', JSON.stringify(D)); }catch(e){}
     rtSoftRefresh();
-    if(typeof showToast==='function') showToast('🔄 Xogta waa la cusboonaysiiyay (qalab kale)', 'teal');
+    if(!silent && typeof showToast==='function') showToast('🔄 Xogta waa la cusboonaysiiyay (qalab kale)', 'teal');
   }catch(e){ /* silent — kani waa 'safety net' oo kaliya, khalad uma jiro user-ka la sheegayo */ }
 }
 function startPollSync(){
@@ -6383,6 +6387,20 @@ function updateGreeting(){
   el.textContent = g;
 }
 updateGreeting();
+
+// Magaca ku qoran hero card-ka Dashboard-ka — 100% DYNAMIC, kama iman qoraal
+// fixed ah. Waxa uu ka soo baxaa D.profile.name (isla magaca uu qofku geliyay
+// markuu isdiiwaan-gelinayay/samaynayay account-ka — "ag-su-name" ee
+// agHandleSignup()), oo la wadaagsan Profile-ka ("prof-name-inp"/saveProfile()).
+// Haddii qofku Profile-ka ka beddelo magaciisa, hero card-kan si toos ah ayuu
+// isaga cusboonaysiiyaa — isla source-ka ayay wadaagaan labaduba.
+function updateHeroName(){
+  const el = document.getElementById('hero-nm');
+  if(!el) return;
+  const name = (D.profile && D.profile.name) ? D.profile.name.trim() : '';
+  el.textContent = (name || 'Isticmaale') + '!';
+}
+updateHeroName();
 
 /* ─── Today's Main Goal ─── */
 if(!D.today_goal) D.today_goal = {}; // {date:'YYYY-MM-DD', text:'', done:false}
@@ -17979,7 +17997,7 @@ function ovComputeStreak(){
 }
 
 function ovShiftPage(delta){
-  const totalPages = Math.ceil(90/28);
+  const totalPages = ovTotalPages();
   if(ovPageIdx===null) ovPageIdx = 0;
   ovPageIdx = Math.max(0, Math.min(totalPages-1, ovPageIdx+delta));
   renderOverviewHeatmap();
@@ -18007,32 +18025,55 @@ function ovResetHeatmap(){
     setTimeout(()=>{ btn.textContent=orig; btn.disabled=false; }, 1400);
   }
 }
+// Sida uu tahay taariikhda maalinta 1aad (D.ov_start_date) marka la eego safka
+// column-yada OV_DOW_NAMES (Sabti,Axad,Isniin,Talaado,Arbaco,Khamiis,Jimco),
+// intee column-yo oo bannaan (blank) ayaa loo baahan yahay ka hor inta aan
+// maalinta 1aad la aasaasin, si ay maalin kastaa u aado column-ka toosan ee
+// u dhigma maalinta usbuuca ee dhabta ah (Axad wuxuu mar walba ku aadaa "Axad",
+// Isniinna "Isniin", wax kastaba ha ahaadee taariikhda la bilaabay).
+function ovLeadingBlanks(startDate){
+  return (startDate.getDay()+1)%7; // JS: 0=Axad..6=Sabti -> beddel si Sabti=0
+}
+function ovTotalPages(){
+  const leading = ovLeadingBlanks(ovGetStartDate());
+  return Math.ceil((90+leading)/28);
+}
 function renderOverviewHeatmap(){
   const el=document.getElementById('ov-heatmap'); if(!el)return;
   if(!D.ov_checked) D.ov_checked=[];
   const startDate = ovGetStartDate();
   const todayIdx = ovGetTodayIndex(); // taariikhda dhabta ah ee device-ka — ma aha tirada la calaamadiyay
+  const leadingBlanks = ovLeadingBlanks(startDate); // tiro column ah oo bannaan ka hor maalinta 1aad, si Sabti/Axad/iwm ay saxdaan
 
   const PAGE_SIZE = 28; // 4 saf x 7 maalmood = hal 'bog'
-  const totalPages = Math.ceil(90/PAGE_SIZE);
-  if(ovPageIdx===null) ovPageIdx = Math.max(0, Math.min(totalPages-1, Math.floor(Math.min(Math.max(todayIdx,0),89)/PAGE_SIZE)));
+  const totalGridCells = 90 + leadingBlanks; // 90 maalmood + column-yada bannaan ee horudhaca ah
+  const totalPages = Math.ceil(totalGridCells/PAGE_SIZE);
+  if(ovPageIdx===null) ovPageIdx = Math.max(0, Math.min(totalPages-1, Math.floor(Math.min(Math.max(todayIdx+leadingBlanks,0),totalGridCells-1)/PAGE_SIZE)));
 
   const pageStart = ovPageIdx*PAGE_SIZE;
-  const pageEnd = Math.min(pageStart+PAGE_SIZE-1, 89);
+  const pageEnd = Math.min(pageStart+PAGE_SIZE-1, totalGridCells-1);
   const canGoPrev = ovPageIdx>0;
   const canGoNext = ovPageIdx<totalPages-1;
 
   const NAVY='#0B1F3D', NAVY2='#14315E', ORANGE='#F59E0B', GREEN='#22C55E', RED='#EF4444', BORDER='#D8DEE8';
 
   // Xayn cinwaanka bogga: bisha/sanadka taariikhda maalinta ugu horreysa ee bogga
-  const pageFirstDate = new Date(startDate); pageFirstDate.setDate(pageFirstDate.getDate()+pageStart);
+  // (haddii bogga ku bilaabmo column bannaan, isticmaal startDate qudheeda)
+  const pageFirstIdx = Math.max(pageStart-leadingBlanks, 0);
+  const pageFirstDate = new Date(startDate); pageFirstDate.setDate(pageFirstDate.getDate()+pageFirstIdx);
   const headerMonth = OV_MONTH_NAMES_SO[pageFirstDate.getMonth()], headerYear = pageFirstDate.getFullYear();
   const dayOfPeriod = Math.min(Math.max(todayIdx+1,1),90);
 
   const dowRow = OV_DOW_NAMES.map((n,i)=>`<div style="text-align:center;font-size:12px;font-weight:800;color:#fff;padding:10px 2px;${i<6?`border-right:1px solid rgba(255,255,255,.18)`:''}">${n}</div>`).join('');
 
   const cellsHtml=[];
-  for(let idx=pageStart; idx<=pageEnd; idx++){
+  for(let pos=pageStart; pos<=pageEnd; pos++){
+    if(pos<leadingBlanks){
+      // Column bannaan — ka hor maalinta 1aad, si maalinaha dambe ay column-ka saxda ah ugu aadaan
+      cellsHtml.push(`<div style="background:#FAFAF9;border:1px dashed ${BORDER};min-height:78px"></div>`);
+      continue;
+    }
+    const idx = pos-leadingBlanks;
     const date = new Date(startDate); date.setDate(date.getDate()+idx);
     const done = D.ov_checked.includes(idx);
     const isToday = idx===todayIdx;
@@ -18119,7 +18160,7 @@ function renderOverviewHeatmap(){
 
       <div style="display:flex;align-items:center;justify-content:center;gap:14px;padding:12px;border-top:1px solid ${BORDER}">
         <button onclick="ovShiftPage(-1)" ${canGoPrev?'':'disabled'} style="width:28px;height:28px;border-radius:50%;border:1.5px solid ${NAVY};background:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;color:${NAVY};cursor:${canGoPrev?'pointer':'default'};opacity:${canGoPrev?'1':'.35'}">‹</button>
-        <div style="font-size:12px;font-weight:700;color:${NAVY}">Maalin ${pageStart+1}–${pageEnd+1} / 90</div>
+        <div style="font-size:12px;font-weight:700;color:${NAVY}">Maalin ${Math.max(pageStart-leadingBlanks,0)+1}–${pageEnd-leadingBlanks+1} / 90</div>
         <button onclick="ovShiftPage(1)" ${canGoNext?'':'disabled'} style="width:28px;height:28px;border-radius:50%;border:1.5px solid ${NAVY};background:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;color:${NAVY};cursor:${canGoNext?'pointer':'default'};opacity:${canGoNext?'1':'.35'}">›</button>
       </div>
     </div>
@@ -19050,6 +19091,7 @@ function saveProfile(){
   if(fn) D.profile.name = fn.textContent;
   const sbn = document.getElementById('sb-profile-name');
   if(sbn) sbn.textContent = D.profile.name.split(' ')[0];
+  if(typeof updateHeroName==='function') updateHeroName();
   S();
 }
 
@@ -20179,6 +20221,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if(typeof renderDiiwaankaTab==='function') renderDiiwaankaTab();
   };
 
+  // ═══════════════════════════════════════════════════════════
+  // DailyMessage — reusable, shared by every page's header chrome.
+  // Returns today's Somali motivational quote + today's date, always
+  // computed live from the system clock (never hard-coded/stored).
+  // ═══════════════════════════════════════════════════════════
+  const SO_MONTHS = ['Janaayo','Febraayo','Maarso','Abriil','Maajo','Juun','Luulyo','Agoosto','Sebtembar','Oktoobar','Nofeembar','Diseembar'];
+  function DailyMessage(){
+    const now = new Date();
+    return {
+      quote: '🌱 Maalin kasta waa fursad cusub.',
+      date: `${now.getDate()} ${SO_MONTHS[now.getMonth()]} ${now.getFullYear()}`
+    };
+  }
+
   function initPageChrome(){
     document.querySelectorAll('.page[id^="page-"]').forEach(pageEl=>{
       const id = pageEl.id.replace('page-','');
@@ -20186,12 +20242,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const meta = PAGE_META[id];
       if(!meta || pageEl.querySelector('.pg-chrome-top')) return;
 
-      const createdKey='pg_created_'+id;
-      let created = localStorage.getItem(createdKey);
-      if(!created){
-        created = new Date().toLocaleDateString('so-SO',{year:'numeric',month:'short',day:'numeric'});
-        localStorage.setItem(createdKey, created);
-      }
+      const dm = DailyMessage();
       const status = localStorage.getItem('pg_status_'+id) || 'active';
       const archiveIds = Object.keys(PAGE_META).filter(k=>k!==id && k!=='abaalmarin' && PAGE_META[k].cat===meta.cat);
 
@@ -20200,7 +20251,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       top.innerHTML =
         `<div class="pg-tag ${meta.color}">${meta.icon} ${meta.cat}</div>`+
         `<div class="pg-meta">`+
-          `<span>🗓️ <b>Taariikhda la abuuray:</b> ${created}</span>`+
+          `<div class="pg-daily"><span class="pg-daily-quote">${dm.quote}</span><span class="pg-daily-date">${dm.date}</span></div>`+
           `<span class="pg-status ${status}" id="pg-status-${id}" onclick="cyclePageStatus('${id}')"><span class="dot"></span><span class="pg-status-txt">${statusLabel(status)}</span></span>`+
         `</div>`+
         (archiveIds.length ? `<div class="pg-archive"><span class="pg-archive-lbl">🗂️ Xogta la xiriirta:</span>${archiveIds.map(a=>`<span class="pg-arc-chip" onclick="goArchive('${a}')">${PAGE_META[a].icon} ${PAGE_NAMES[a]||a}</span>`).join('')}</div>` : '');
@@ -21981,8 +22032,15 @@ function agEnterApp(email){
   const sb = document.getElementById('sidebar'); if(sb) sb.style.display = '';
   const main = document.getElementById('app-main'); if(main) main.style.display = '';
   const emailEl = document.getElementById('ag-account-email'); if(emailEl && email) emailEl.textContent = email;
+  // Isla markiiba (kama sugin 5-second poll-ka), si aamusan uga soo qaad
+  // xogta ugu dambeysay ee Supabase — muhiim qalab cusub ama browser cusub
+  // (si aan D-ga maskaxda ahaan madhan looga dhigin isla markaana looga
+  // hortago in xogtaas madhan lagu dul qoro (overwrite) xogta cloud-ka
+  // dhabta ah ee horeba jirta, ka hor inta S() aan wax kale kaydin).
+  if(typeof pollSyncCheck === 'function') pollSyncCheck(true);
   if(typeof rtSubscribe === 'function') rtSubscribe();
   if(typeof startPollSync === 'function') startPollSync();
+  if(typeof updateHeroName === 'function') updateHeroName();
   // Push dhab ah — haddii permission-ku horeyba u ogolaaday, is-diiwaan-geli
   // (subscribe) si aamusan, si aan loo waydiin wax dheeraad ah.
   if('Notification' in window && Notification.permission==='granted' && typeof agSubscribeToPush==='function'){
