@@ -22285,6 +22285,15 @@ function agLogout(){
   const client = agClient();
   if(client){ client.auth.signOut().catch(e=>console.warn('signOut failed:', typeof sbErrMsg==='function'?sbErrMsg(e):e)); }
   try{ localStorage.removeItem('ils_supabase_cfg'); }catch(e){}
+  // MUHIIM: tirtir xogtii app-ka ee local-ka ku jirtay (D-ga oo dhan, oo ay
+  // ku jirto D.profile.name) — haddii kale, qof kale oo isla browser-kan ku
+  // soo gala (ama account cusub oo la sameeyo) wuxuu ku dhici lahaa magaca/
+  // xogtii user-kii hore ee ka baxay, illaa uu Supabase cloud-ku dib u
+  // cusboonaysiiyo (haddii aan cloud row-ku jirin weli — account cusub — D
+  // hore uma beddesho marnaba). Marka la log-out gareeyo, ha ahaato bilow
+  // 100% nadiif ah.
+  try{ localStorage.removeItem('noloshayda_v3'); }catch(e){}
+  try{ localStorage.removeItem('noloshayda_edits'); }catch(e){}
   location.reload();
 }
 async function agInit(){
