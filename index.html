@@ -1,4 +1,4 @@
-A<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="so">
 <head>
 <meta charset="UTF-8">
@@ -5415,8 +5415,9 @@ body.editing #settings-edit-mode{display:block !important}
     <!-- Settings Tabs -->
     <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
       <button class="btn-sm active" id="set-t1" onclick="showSetTab('data',this)" style="flex:1;justify-content:center">🗄️ Xogta</button>
-      <button class="btn-sm" id="set-t4" onclick="showSetTab('recycle',this)" style="flex:1;justify-content:center">🗑️ Recycle Bin</button>
+      <button class="btn-sm" id="set-t2" onclick="showSetTab('notifications',this)" style="flex:1;justify-content:center">🔔 Ogeysiisyada</button>
       <button class="btn-sm" id="set-t3" onclick="showSetTab('system',this)" style="flex:1;justify-content:center">⚙️ Nidaamka</button>
+      <button class="btn-sm" id="set-t4" onclick="showSetTab('recycle',this)" style="flex:1;justify-content:center">🗑️ Recycle Bin</button>
     </div>
 
     <!-- ── TAB: XOGTA (Data Management) ── -->
@@ -5484,6 +5485,10 @@ body.editing #settings-edit-mode{display:block !important}
         </div>
       </div>
 
+    </div>
+
+    <!-- ── TAB: OGEYSIISYADA (Notifications) ── -->
+    <div id="set-notifications" style="display:none">
       <!-- Notifications — FUNCTIONAL SYSTEM -->
       <div class="card" id="notif-settings-card" style="margin-bottom:14px">
         <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">🔔 Farriimaha (Notifications) — Dhab ah</div>
@@ -5547,6 +5552,24 @@ body.editing #settings-edit-mode{display:block !important}
             <button class="btn-sm" id="sound-btn-none" onclick="setNotifSound('none')" style="flex:1;min-width:70px">🔇 Aamus</button>
           </div>
           <div style="font-size:10px;color:var(--text3);margin-top:6px">Hadda: <span id="current-sound">—</span></div>
+          <div style="margin-top:12px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:10px">
+              <span style="font-size:11.5px;color:var(--text2)">⏱️ Muddada dhawaaqa</span>
+              <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+                <input type="number" id="sound-duration-input" min="5" max="120" step="1" value="60" inputmode="numeric" pattern="[0-9]*"
+                  oninput="notifSoundDurFromInput(this.value)"
+                  onchange="notifSoundDurCommit(this.value)"
+                  onblur="notifSoundDurCommit(this.value)"
+                  onkeydown="if(event.key==='Enter')this.blur()"
+                  style="width:54px;text-align:center;font-size:12.5px;font-weight:700;color:var(--text);border:1px solid var(--border-l);border-radius:7px;padding:5px 2px;background:var(--card)">
+                <span style="font-size:11px;color:var(--text3)">ilbiriqsi</span>
+              </div>
+            </div>
+            <input type="range" id="sound-duration-slider" min="5" max="120" step="5" value="60"
+              oninput="notifSoundDurFromSlider(this.value)"
+              onchange="setNotifSoundDuration(this.value)" style="width:100%;cursor:pointer">
+            <div style="font-size:10px;color:var(--text3);margin-top:3px">Immisa ilbiriqsi dhawaaqu/gariirku sii soconayo marka farriin timaado (5–120s) — isticmaal slider-ka ama ku qor tiro gacanta</div>
+          </div>
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:10px">
             <input type="checkbox" id="vibrate-enabled" checked onchange="toggleVibration(this.checked)" style="width:18px;height:18px;cursor:pointer">
             <span style="font-size:11.5px;color:var(--text2)">📳 Gariirka (Vibration) — haddii device-ku taageero</span>
@@ -5638,7 +5661,10 @@ body.editing #settings-edit-mode{display:block !important}
         <div style="font-size:11px;color:var(--text2);margin-bottom:12px">Dhammaan farriimihii kuu yimid — Maanta, Shalay, iyo waayahii hore</div>
         <div id="nc-list"></div>
       </div>
+    </div>
 
+    <!-- ── TAB: NIDAAMKA (System) continued ── -->
+    <div id="set-system-2" style="display:none">
       <!-- App Info -->
       <div class="card" style="margin-bottom:14px">
         <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">ℹ️ App Macluumaadka</div>
@@ -5910,10 +5936,10 @@ function sbFriendlyMsg(e){
     return 'Anon Key-ga waa khaldan yahay ama dhacay — ka hubi Supabase dashboard-ka (Settings → API).';
   }
   if(low.includes('relation') && low.includes('does not exist')){
-    return 'Table-ka "app_state" ma jiro Supabase-kaaga — abuur (fiiri hagaha hoose).';
+    return 'Mid ka mid ah tables-ka Supabase-kaaga ma jiro — hubi in aad RUN-gareysay SQL schema-ga oo dhan (higsad_schema.sql).';
   }
   if(low.includes('row-level security') || low.includes('rls') || low.includes('permission denied')){
-    return 'RLS (Row Level Security) ayaa xannibaysa — u ogolow policy INSERT/SELECT/UPDATE ee table-ka app_state.';
+    return 'RLS (Row Level Security) ayaa xannibaysa — hubi in aad login/soo gashay (authenticated), iyo in policies-ka SQL schema-ga la RUN-gareeyay.';
   }
   return raw;
 }
@@ -5964,29 +5990,40 @@ async function cvLoad(){
     return;
   }
   try{
-    const { data, error } = await client.from('app_state').select('data,updated_at').eq('sync_id', syncId).maybeSingle();
-    if(error) throw error;
-    if(!data){
+    const domains = Object.keys(CLOUD_DOMAIN_MAP);
+    const rows = await Promise.all(domains.map(dm=>
+      client.from(dm).select('data,updated_at').eq('user_id', syncId).maybeSingle()
+        .then(r=>({domain:dm, data:r.data, error:r.error}))
+        .catch(e=>({domain:dm, data:null, error:e}))
+    ));
+    const merged = {}; let lastUpdated = 0;
+    rows.forEach(r=>{
+      if(r.error || !r.data) return;
+      Object.assign(merged, r.data.data||{});
+      const t = new Date(r.data.updated_at).getTime();
+      if(t>lastUpdated) lastUpdated = t;
+    });
+    if(!lastUpdated){
       body.innerHTML = '<div style="text-align:center;color:var(--text3);padding:20px 0">☁️ Wali wax kuma jiro Cloud-ka — marka aad wax badasho, si toos ah ayaa loo diri doonaa.</div>';
       return;
     }
-    const d = data.data || {};
-    const when = new Date(data.updated_at).toLocaleString('so-SO');
+    const d = merged;
+    const when = new Date(lastUpdated).toLocaleString('so-SO');
     const counts = [
       ['📝 Journal', Array.isArray(d.journal)?d.journal.length:0],
       ['✅ Tasks', Array.isArray(d.tasks)?d.tasks.length:0],
       ['📚 Books', Array.isArray(d.books)?d.books.length:0],
       ['📖 Quraan (Juz)', d.quran && d.quran.juz || 0],
-      ['🔥 Streak', d.streak || 0],
+      ['🔥 Streak', D.streak || 0],
       ['💡 Fikrad', Array.isArray(d.fikrad)?d.fikrad.length:0],
     ];
     body.innerHTML = `
-      <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Markii ugu dambeysay ee la cusboonaysiiyay: <b style="color:var(--text)">${when}</b></div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Markii ugu dambeysay ee la cusboonaysiiyay (qayb kasta table-keeda gaarka ah ayay ku kaydsan tahay): <b style="color:var(--text)">${when}</b></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
         ${counts.map(([label,val])=>`<div class="sc" style="padding:10px;text-align:center"><div style="font-size:10.5px;color:var(--text3)">${label}</div><div style="font-size:18px;font-weight:800;color:var(--text)">${val}</div></div>`).join('')}
       </div>
       <details>
-        <summary style="cursor:pointer;font-size:12px;color:var(--text2);font-weight:700">🔍 Fiiri raw JSON (dhammaan xogta)</summary>
+        <summary style="cursor:pointer;font-size:12px;color:var(--text2);font-weight:700">🔍 Fiiri raw JSON (dhammaan xogta la wadaagsan yahay tables-ka)</summary>
         <pre style="white-space:pre-wrap;word-break:break-word;font-size:10.5px;background:var(--bg);border-radius:10px;padding:10px;margin-top:8px;max-height:260px;overflow-y:auto">${JSON.stringify(d, null, 2).replace(/</g,'&lt;')}</pre>
       </details>`;
   }catch(e){
@@ -5994,41 +6031,255 @@ async function cvLoad(){
     body.innerHTML = `<div style="text-align:center;color:#B91C1C;padding:20px 0">❌ Khalad ayaa dhacay: ${sbFriendlyMsg(e).replace(/</g,'&lt;')}</div>`;
   }
 }
+// ═══════════════════════════════════════════════════════════
+// CLOUD_DOMAIN_MAP — halkan ayaa lagu sheegayaa D-key kasta (110+) inuu
+// ku dhex jiro table-kee (16 domain tables, sida schema-ga SQL-ka).
+// Fa'iidada: beddel ku dhaca hal qayb (tusaale "quran_progress") marnaba
+// ma taaban doono xogta qaybta kale ("finance"), oo aan la isticmaalin
+// hal "app_state" blob oo dhammaantood isku dhaca. `profiles` waxaa loo
+// maareeyaa gaar ahaan (id=auth.uid(), hoos ka eeg pushDirtyDomains() - qaybta profileDirty).
+// ═══════════════════════════════════════════════════════════
+const CLOUD_DOMAIN_MAP = {
+  daily_records: ['jadwal_bilaha','master_sched','ma_tasks','canon_tasks','skill_schedule','daily_stats','daily_archive','daily_prompts','today_goal','rep_day_note','rep_week_note','rep_month_plan','rep_note','weekly','monthly','week_ratings','history_log'],
+  worship: ['salah','salah_streak','sal_points','sal_state','sunnah','sunnah_done','cib_sal','cib_soon','cib_duxa','cib_qlog','cib_adkaar','soon_days','soon_fajr','soon_maghrib','soon_sunnah','soon_sunnah_notes','jim_check','jim_log','fasting','dhm_done','dhm_streak','jalaad'],
+  quran_progress: ['quran','quran_xifdi','ch30_done'],
+  habits: ['habits','habits_good','habit_today'],
+  goals: ['yool_goals','vision_board','vision_board_month','vision_board_year','keyd_goal','keyd_log'],
+  health: ['health','weight_log','food_log','pomo_by_date','pomo_history','pomo_total','nad','nad_log','nad_history'],
+  education: ['learning','gpa','wb_check','wb_course_progress','wb_lesson_scores','wb_luqo_last','wb_luqo_streak','wb_manual_exams','wc_classes','wc_program_name','wc_review_log','wc_state','wn_alarm_on','wn_alarm_time','wn_nights','wn_state','wn_subject','courses','books','hn_dh2_log','hn_dhama_log','hn_pods','hn_shaqo_notes','hn_xikmad_custom','sun_check'],
+  finance: ['dh_goals','dh_21_done','dh_points','dh_best_streak','dq_income','dq_kharash','dq_profile','deyn_ku','deyn_lay','kharash_log','qaaran_bilaha'],
+  ideas: ['fikrad','ga_day_notes'],
+  journal: ['journal','notes','xiisad','qp_log'],
+  wins: ['wins','abaal_list'],
+  tasks: ['tasks','recycle_bin','deleted_log'],
+  diary_log: ['diiwaan_maanta','diiw_notes','diiw_corrections','diiw_missed_reasons','diiw_month_archive','diiw_task_history','diiw_week_archive'],
+  overview_habits: ['ov_check','ov_checked','ov_start_date'],
+  events: ['events'],
+  reminders: ['custom_reminders'],
+};
+// D-keys ee gaarka u ah 'profiles' table-ka (settings guud + profile qudheeda)
+const PROFILE_DOMAIN_KEYS = ['profile','theme','lang','dnd_mode','vibrate_enabled','notif_sound','notif_sound_duration','quiet_hours','notif_settings','notification_log','notif_last_fired','weather_cache','points','points_today','streak','streak_last_date','earned_badge_ids','sub_pages','custom_cards','sb_custom_items','sb_labels','plan_queue'];
+
+// LAST_PUSHED_SNAPSHOT — waxa uu xasuustaa JSON-kii ugu dambeeyay ee la
+// diray qayb kasta, si "queueCloudPush" uu ogaado qaybaha DHAB AHAAN
+// isbeddelay (dirty) oo keliya loo diro — halkii dhammaan 16 table
+// mar walba la cusboonaysiin lahaa xitaa marka aysan waxba isbeddelin.
+const LAST_PUSHED_SNAPSHOT = {};
+
+function buildDomainPayload(domain){
+  const keys = domain==='profiles' ? PROFILE_DOMAIN_KEYS : (CLOUD_DOMAIN_MAP[domain]||[]);
+  const out = {};
+  keys.forEach(k=>{ if(D[k]!==undefined) out[k]=D[k]; });
+  return out;
+}
+// Ku dar xogta qayb (domain) ka timid Supabase D-ga local-ka ah, iyada oo
+// aan la taaban qaybaha kale ee D-ga (DOMAIN-LEVEL record merge — hal saf per domain per user, ma aha full overwrite).
+function applyDomainData(domain, dataObj, remoteTime, version){
+  const keys = domain==='profiles' ? PROFILE_DOMAIN_KEYS : (CLOUD_DOMAIN_MAP[domain]||[]);
+  keys.forEach(k=>{ if(dataObj && Object.prototype.hasOwnProperty.call(dataObj,k)) D[k]=dataObj[k]; });
+  if(!D._domain_synced_at) D._domain_synced_at = {};
+  D._domain_synced_at[domain] = remoteTime;
+  if(version!=null){ if(!D._domain_versions) D._domain_versions = {}; D._domain_versions[domain] = version; }
+  LAST_PUSHED_SNAPSHOT[domain] = JSON.stringify(buildDomainPayload(domain)); // ka hortag "echo" isla markiiba dib loo diro
+}
+
+// TASK 3 — Safe field-level (D-key level) merge marka CONCURRENCY conflict
+// dhaco (fiiri TASK 2). Sababtoo ah domain kastaa (tusaale 'worship') wuxuu
+// ka kooban yahay dhowr D-key ('salah','sunnah',...), waxaan u kala saarnaa
+// D-key kasta gudaha domain-ka:
+//   - Haddii D-key-gan LOCAL-ku ISBEDDELAY tan iyo push-kii ugu dambeeyay
+//     (marka la barbardhigo LAST_PUSHED_SNAPSHOT — 'baseline'), qaado
+//     qiimaha LOCAL-ka (waan taaban/beddelay, sidaas darteed waa mid loo
+//     baahan yahay in la ilaaliyo).
+//   - Haddii kale (lama taaban local-ka), qaado qiimaha REMOTE-ka (qalabka
+//     kale ayaa cusboonaysiiyay, waana kan runta ah).
+// Kani ma aha "true 3-way merge" (looma baahna structure-ka gudaha hal
+// D-key, tusaale array-ga 'tasks' qudhiisa), laakiin waa xal AMMAAN ah oo
+// ka fogaanaya "blind overwrite" — D-key kasta oo aan la taaban marnaba
+// lama lumin doono.
+function mergeDomainOnConflict(domain, localPayload, remoteData){
+  const keys = domain==='profiles' ? PROFILE_DOMAIN_KEYS : (CLOUD_DOMAIN_MAP[domain]||[]);
+  let baseline = {};
+  try{ baseline = JSON.parse(LAST_PUSHED_SNAPSHOT[domain]||'{}'); }catch(e){ baseline = {}; }
+  const merged = {};
+  keys.forEach(k=>{
+    const localVal = localPayload[k];
+    const baseVal = baseline[k];
+    const remoteVal = (remoteData && Object.prototype.hasOwnProperty.call(remoteData,k)) ? remoteData[k] : undefined;
+    let localChanged;
+    try{ localChanged = JSON.stringify(localVal) !== JSON.stringify(baseVal); }catch(e){ localChanged = true; }
+    merged[k] = (localChanged || remoteVal===undefined) ? localVal : remoteVal;
+  });
+  return merged;
+}
+
+// FINAL CONCURRENCY SAFETY FIX — shared "is this domain dirty (local
+// unsynced changes)?" check, reusing the EXACT SAME baseline comparison
+// pushDirtyDomains() already uses (LAST_PUSHED_SNAPSHOT vs current local
+// payload) — no duplicate/new logic. rtHandleChange() and pollSyncCheck()
+// both call this BEFORE applying remote data, so a local edit that hasn't
+// reached the cloud yet is never silently overwritten by an incoming
+// Realtime event or poll result.
+function isDomainDirty(domain){
+  const payload = buildDomainPayload(domain);
+  const snap = JSON.stringify(payload);
+  return LAST_PUSHED_SNAPSHOT[domain] !== snap;
+}
+
+// TASK 1+2 — Diri hal domain, adigoo isticmaalaya OPTIMISTIC CONCURRENCY
+// (version column): haddii version-ka client-ku hayo uu weli yahay kan
+// database-ka, UPDATE-ku wuu dhici doonaa (server-ku waa kan go'aamiya
+// updated_at + version-ka cusub, fiiri trigger-ka SQL-ka). Haddii version-ku
+// isbeddelay (qalab kale ayaa horeba wax badalay), waxaan samaynaa safe
+// merge (D-key level) kadibna isku dayaa mar labaad — MARNABA lama sameyn
+// doono "blind overwrite" oo cloud data lumisa.
+async function pushOneDomain(client, table, syncId, payload){
+  const isProfile = table==='profiles';
+  const filterCol = isProfile ? 'id' : 'user_id';
+  const knownVersion = (D._domain_versions && D._domain_versions[table]);
+
+  if(knownVersion==null){
+    // Aan weli ogeyn version-ka (push-kan ugu horreeya ee domain-kan) —
+    // isku day INSERT (safka cusub, version wuxuu si otomaatig ah u
+    // bilaabmaa 1 — fiiri SQL default). Haddii uu horeba jiro (23505),
+    // u gudub akhriska/UPDATE-ka hoose.
+    const insertRow = isProfile
+      ? { id: syncId, full_name:(D.profile&&D.profile.name)||'', email:(D.profile&&D.profile.email)||'', data: payload }
+      : { user_id: syncId, data: payload };
+    const { data: inserted, error: insErr } = await client.from(table).insert(insertRow).select('version,updated_at').maybeSingle();
+    if(!insErr && inserted) return { version: inserted.version, updated_at: inserted.updated_at };
+    // (23505 = unique violation, safku horeba jiraa) — u gudub hoose
+  }
+
+  const { data: current, error: readErr } = await client.from(table).select('version,data,updated_at').eq(filterCol, syncId).maybeSingle();
+  if(readErr) throw readErr;
+
+  if(!current){
+    // Runtii ma jiro (case dhif ah) — samee mid cusub si ammaan ah.
+    const insertRow = isProfile
+      ? { id: syncId, full_name:(D.profile&&D.profile.name)||'', email:(D.profile&&D.profile.email)||'', data: payload }
+      : { user_id: syncId, data: payload };
+    const { data: created, error: createErr } = await client.from(table).upsert(insertRow, { onConflict: filterCol }).select('version,updated_at').maybeSingle();
+    if(createErr) throw createErr;
+    return { version: created.version, updated_at: created.updated_at };
+  }
+
+  const baseVersion = knownVersion!=null ? knownVersion : current.version;
+  const updateRow = isProfile
+    ? { full_name:(D.profile&&D.profile.name)||'', email:(D.profile&&D.profile.email)||'', data: payload }
+    : { data: payload };
+
+  const { data: updated, error: updErr } = await client.from(table)
+    .update(updateRow)
+    .eq(filterCol, syncId)
+    .eq('version', baseVersion)   // ← OPTIMISTIC CONCURRENCY: kaliya haddii version-ku weli isku mid yahay
+    .select('version,updated_at');
+  if(updErr) throw updErr;
+
+  if(updated && updated.length){
+    return { version: updated[0].version, updated_at: updated[0].updated_at };
+  }
+
+  // CONFLICT: 0 saf ayaa la beddelay — version-ku wuu isbeddelay (qalab
+  // kale ayaa na dheereeyay). Ha sameynin blind overwrite — samee merge
+  // ammaan ah (D-key level) kadibna isku day MAR LABAAD adigoo isticmaalaya
+  // version-ka ugu dambeeya ee database-ku hadda haysto.
+  const { data: latest, error: latestErr } = await client.from(table).select('version,data,updated_at').eq(filterCol, syncId).maybeSingle();
+  if(latestErr || !latest) throw (latestErr || new Error('conflict: latest row not found'));
+  const mergedPayload = mergeDomainOnConflict(table, payload, latest.data);
+  const retryRow = isProfile
+    ? { full_name:(D.profile&&D.profile.name)||'', email:(D.profile&&D.profile.email)||'', data: mergedPayload }
+    : { data: mergedPayload };
+  const { data: retried, error: retryErr } = await client.from(table)
+    .update(retryRow).eq(filterCol, syncId).eq('version', latest.version).select('version,updated_at');
+  if(!retryErr && retried && retried.length){
+    // Ku dar natiijada la-isku-dartay (merged) D-ga local-ka ah sidoo kale,
+    // si UI-gu isla markiiba u muujiyo xaqiiqada la mideeyay.
+    applyDomainData(table, mergedPayload, new Date(retried[0].updated_at).getTime(), retried[0].version);
+    return { version: retried[0].version, updated_at: retried[0].updated_at, merged:true };
+  }
+  // Nadir: conflict labaad (qof kale ayaa isla waqtigan wax beddelay).
+  // Ha isku dayin mar seddexaad — D-ga local-ku weli wuxuu haystaa isbeddelkiisii
+  // (xog LAMA LUMIN), sync-cycle-ka xiga ayaa dib isu dayi doona.
+  return { conflict:true };
+}
+
 function queueCloudPush(){
   const cfg = sbConfig();
   if(!cfg) return; // cloud sync not configured, localStorage-only
   clearTimeout(SB_PUSH_TIMER);
-  SB_PUSH_TIMER = setTimeout(pushToCloud, 1500);
+  SB_PUSH_TIMER = setTimeout(()=>pushDirtyDomains(false), 1500);
 }
-async function pushToCloud(showStatus){
+
+// Diri KALIYA qaybaha (tables) DHAB AHAAN isbeddelay tan iyo push-kii ugu
+// dambeeyay — DOMAIN-LEVEL record sync (hal saf per domain/qof), ma aha hal "app_state" blob oo dhammaan
+// 110-ka qaybood ku jiraan (taasi ayaa sababi lahayd conflict/data-loss
+// marka laba qalab isku mar wax badalaan qaybo kala duwan). updated_at/
+// version waxaa go'aaminaya SERVER-ka (trigger-ka SQL), MA AHA client-ka.
+async function pushDirtyDomains(showStatus){
   const client = sbClient(); const syncId = sbSyncId();
   if(!client){ if(showStatus) sbSetStatus('❌ Supabase lama dejin (hubi URL/Key)', 'red'); return; }
   if(!syncId){ if(showStatus) sbSetStatus('❌ Sync ID ma jiro', 'red'); return; }
   if(!navigator.onLine){ if(showStatus) sbSetStatus('❌ Internetka lama xirna', 'red'); return; }
-  if(showStatus) sbSetStatus('⏳ U dirista...', 'amber');
+
+  const dirty = [];
+  Object.keys(CLOUD_DOMAIN_MAP).forEach(domain=>{
+    const payload = buildDomainPayload(domain);
+    const snap = JSON.stringify(payload);
+    if(LAST_PUSHED_SNAPSHOT[domain] !== snap) dirty.push({domain, payload, snap});
+  });
+  const profilePayload = buildDomainPayload('profiles');
+  const profileSnap = JSON.stringify(profilePayload);
+  if(LAST_PUSHED_SNAPSHOT['profiles'] !== profileSnap) dirty.push({domain:'profiles', payload:profilePayload, snap:profileSnap});
+
+  if(!dirty.length){ if(showStatus) sbSetStatus('✅ Wax isbeddel ah lagama helin', 'green'); return; }
+  if(showStatus) sbSetStatus('⏳ U dirista ('+dirty.length+' qaybood)...', 'amber');
   try{
-    const { error } = await client.from('app_state').upsert({
-      sync_id: syncId, data: D, updated_at: new Date(D._updated_at||Date.now()).toISOString()
-    }, { onConflict: 'sync_id' });
-    if(error) throw error;
+    const results = await Promise.all(dirty.map(({domain,payload})=>
+      pushOneDomain(client, domain, syncId, payload).then(r=>({domain, payload, ...r})).catch(e=>({domain, error:e}))
+    ));
+    let anyErr = null;
+    results.forEach(r=>{
+      if(r.error){ anyErr = r.error; console.error('Push failed for domain', r.domain, sbErrMsg(r.error)); return; }
+      if(r.conflict) return; // xog lama lumin — waxaa dib loo isku dayi doonaa sync-cycle-ka xiga
+      const dirtyEntry = dirty.find(d=>d.domain===r.domain);
+      if(dirtyEntry){
+        LAST_PUSHED_SNAPSHOT[r.domain] = r.merged ? JSON.stringify(buildDomainPayload(r.domain)) : dirtyEntry.snap;
+      }
+      if(!D._domain_synced_at) D._domain_synced_at = {};
+      D._domain_synced_at[r.domain] = new Date(r.updated_at).getTime();
+      if(!D._domain_versions) D._domain_versions = {};
+      D._domain_versions[r.domain] = r.version;
+    });
+    if(anyErr) throw anyErr;
     if(showStatus) sbSetStatus('✅ La kaydiyay Supabase '+new Date().toLocaleTimeString(), 'green');
   }catch(e){
-    console.error('Supabase push failed:', sbErrMsg(e));
+    console.error('Domain push failed:', sbErrMsg(e));
     if(showStatus) sbSetStatus('❌ '+sbFriendlyMsg(e), 'red');
   }
 }
+// Magac hore loola socday ('pushToCloud') — la ilaaliyay si settings-ka/
+// buttons-ka hore aysan u jabin haddii ay isticmaaleen wicitaankan.
+function pushToCloud(showStatus){ return pushDirtyDomains(showStatus); }
+
 async function pullFromCloud(showStatus){
   const client = sbClient(); const syncId = sbSyncId();
   if(!client){ if(showStatus) sbSetStatus('❌ Supabase lama dejin (hubi URL/Key)', 'red'); return; }
   if(!syncId){ if(showStatus) sbSetStatus('❌ Sync ID ma jiro', 'red'); return; }
   if(!navigator.onLine){ if(showStatus) sbSetStatus('❌ Internetka lama xirna', 'red'); return; }
+  if(!confirm('Qaybaha cloud-ku ka weyn yahay (updated_at) ayaa lagu rogi doonaa local-ka. Qaybaha aan cloud-ku wax ka duwanayn lama taaban doono. Sii wad?')) return;
   if(showStatus) sbSetStatus('⏳ Ka soo qaadista...', 'amber');
   try{
-    const { data, error } = await client.from('app_state').select('data,updated_at').eq('sync_id', syncId).maybeSingle();
-    if(error) throw error;
-    if(!data){ if(showStatus) sbSetStatus('ℹ️ Cloud-ka wax kuma jiraan weli', 'amber'); return; }
-    if(!confirm('Xogta cloud-ka ayaa lagu rogayaa mid dhamaan (jaantus hadda ku jira waa la beddelayaa). Sii wad?')) return;
-    localStorage.setItem('noloshayda_v3', JSON.stringify(data.data));
+    let anyFound=false;
+    for(const domain of [...Object.keys(CLOUD_DOMAIN_MAP), 'profiles']){
+      const filterCol = domain==='profiles' ? 'id' : 'user_id';
+      const { data, error } = await client.from(domain).select('data,updated_at,version').eq(filterCol, syncId).maybeSingle();
+      if(error || !data) continue;
+      anyFound = true;
+      applyDomainData(domain, data.data, new Date(data.updated_at).getTime(), data.version);
+    }
+    if(!anyFound){ if(showStatus) sbSetStatus('ℹ️ Cloud-ka wax kuma jiraan weli', 'amber'); return; }
+    localStorage.setItem('noloshayda_v3', JSON.stringify(D));
     if(showStatus) sbSetStatus('✅ Waa la soo qaaday, kolay dib u shubaya...', 'green');
     setTimeout(()=>location.reload(), 700);
   }catch(e){
@@ -6036,25 +6287,73 @@ async function pullFromCloud(showStatus){
     if(showStatus) sbSetStatus('❌ '+sbFriendlyMsg(e), 'red');
   }
 }
+
+// MIGRATION — hal mar keliya (per ACCOUNT, ma aha per DEVICE): haddii
+// account-kan uu lahaa xog ku kaydsan habkii hore (hal saf 'app_state'),
+// u qaybi qaybaha cusub (16 domain tables) si aan xog uusan lumin.
+// MUHIIM: waxaan marka hore hubinaynaa CLOUD-ka qudheeda (ma aha kaliya
+// calaamad local ah) in domain tables-ku horeba xog u leeyihiin account-
+// kan — haddii ay leeyihiin (qalab kale ayaa horeba migrate-gareeyay),
+// WAA LA JOOJIYAA halkii xog CUSUB (oo qalabkaas kale horeba geliyay) lagu
+// dul qori lahaa (overwrite) xog HORE oo 'app_state' ka timid oo duugoobay.
+async function migrateLegacyAppStateIfNeeded(){
+  if(D._migrated_to_domain_tables) return; // device-kan horeba way dhammaatay
+  const client = sbClient(); const syncId = sbSyncId();
+  if(!client || !syncId) return;
+  try{
+    // 1) Hubi CLOUD-ka: haddii mid ka mid ah domain tables-ku (tusaale
+    // 'tasks') uu horeba saf u leeyahay account-kan, migration-ku horeba
+    // waa dhammaaday (qalab kale) — kaliya calaamadi oo dhaaf, HA overwrite.
+    const probe = await client.from('tasks').select('user_id').eq('user_id', syncId).maybeSingle();
+    if(probe && probe.data){
+      D._migrated_to_domain_tables = true;
+      try{ localStorage.setItem('noloshayda_v3', JSON.stringify(D)); }catch(e){}
+      return;
+    }
+    // 2) Account cusub (weli lama migrate-gareyn) — raadi safkii hore ee 'app_state'.
+    const { data: legacy } = await client.from('app_state').select('data,updated_at').eq('sync_id', syncId).maybeSingle();
+    if(legacy && legacy.data){
+      const nowIso = new Date(legacy.updated_at || Date.now()).toISOString();
+      const ops = Object.keys(CLOUD_DOMAIN_MAP).map(domain=>{
+        const keys = CLOUD_DOMAIN_MAP[domain];
+        const payload = {};
+        keys.forEach(k=>{ if(legacy.data[k]!==undefined) payload[k]=legacy.data[k]; });
+        return client.from(domain).upsert({ user_id:syncId, data:payload, updated_at:nowIso }, { onConflict:'user_id' });
+      });
+      const profilePayload = {};
+      PROFILE_DOMAIN_KEYS.forEach(k=>{ if(legacy.data[k]!==undefined) profilePayload[k]=legacy.data[k]; });
+      const p = legacy.data.profile||{};
+      ops.push(client.from('profiles').upsert({ id:syncId, full_name:p.name||'', email:p.email||'', data:profilePayload, updated_at:nowIso }, { onConflict:'id' }));
+      await Promise.all(ops);
+      // Buuxi D local-ka ah kaliya haddii uusan horeba xog lahayn (ha lumin
+      // wixii hore ee device-kan lagu geliyay oo aan weli la push-gareyn).
+      Object.keys(legacy.data).forEach(k=>{ if(D[k]===undefined) D[k]=legacy.data[k]; });
+    }
+    D._migrated_to_domain_tables = true;
+    try{ localStorage.setItem('noloshayda_v3', JSON.stringify(D)); }catch(e){}
+  }catch(e){
+    // MUHIIM: haddii migration-ku fashilmo (network/RLS/khalad kale), HA
+    // taaban D._migrated_to_domain_tables (ha calaamadin "dhammaystiran"),
+    // xogtii local-ka ahayd si ammaan ah ayay u sii jirtaa — waxaa dib
+    // loo isku dayi doonaa marka xigta uu user-ku login galo.
+    console.warn('Migration check failed (waa la isku dayi doonaa mar dambe):', e);
+  }
+}
 function sbSetStatus(msg, color){
   const el = document.getElementById('sb-status'); if(!el) return;
   const colors = {green:'#16A34A', red:'#DC2626', amber:'#B45309'};
   el.textContent = msg; el.style.color = colors[color]||'var(--text2)';
 }
-function sbGenerateId(){
-  return 'sync-'+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,6);
-}
-function sbConnect(){
-  const url = document.getElementById('sb-url').value.trim();
-  const key = document.getElementById('sb-key').value.trim();
-  let syncId = document.getElementById('sb-syncid').value.trim();
-  if(!url || !key){ alert('Fadlan geli URL-ka iyo Anon Key-ga Supabase!'); return; }
-  if(!syncId) syncId = sbGenerateId();
-  sbSaveConfig(url, key, syncId);
-  document.getElementById('sb-syncid').value = syncId;
-  sbRenderConfigState();
-  sbSetStatus('🔗 Waa la xiray. Riix "U dir" ama "Ka soo qaad" si aad u bilowdo.', 'green');
-}
+// sbGenerateId()/sbConnect() (habkii hore ee syncId RANDOM ah sida
+// "identity") waa la SAARAY guud ahaan — waxay ahaayeen khatar amni ah:
+// waxay u oggolaan jireen inuu qofku syncId RANDOM ah geliyo isaga oo aan
+// weligiis Supabase Auth ku gelin (login), taasoo ka gudbi lahayd
+// "authenticated UUID keliya ayaa identity ah" ee muhiimka ah. Waxaan
+// xaqiijinay in aysan jirin HTML button/form (sb-url/sb-key/sb-syncid)
+// oo isticmaala, sidaas darteed ka saarkani wax kama beddelo UI-ga ama
+// functionality-ga jira — hadda syncId-gu 100% wuxuu ka yimaadaa
+// agEnsureCloudConfig(userId) oo kaliya la yeero KADIB Supabase Auth
+// login/signup dhab ah (fiiri agHandleLogin/agHandleSignup/session-restore).
 function sbDisconnect(){
   if(!confirm('Ma hubtaa inaad ka go\u2019naanayso Supabase sync-ga? (Xogta localStorage kuma baaba\u2019eyso)')) return;
   if(typeof rtUnsubscribe === 'function') rtUnsubscribe();
@@ -6097,6 +6396,7 @@ let RT_CHANNEL = null;
 let RT_RETRY_TIMER = null;
 let RT_RETRY_DELAY = 2000; // exponential backoff, dib ugu celceliyaa xiriirka
 const RT_MAX_RETRY_DELAY = 30000;
+let RT_STATUS = 'CLOSED'; // 'SUBSCRIBED' | 'CHANNEL_ERROR' | 'TIMED_OUT' | 'CLOSED' — poll-ku wuxuu ku salaysan yahay tan (TASK 4)
 
 function rtSetBadge(text, color){
   const el = document.getElementById('rt-status-badge');
@@ -6112,6 +6412,7 @@ function rtUnsubscribe(){
     try{ client.removeChannel(RT_CHANNEL); }catch(e){ /* noqo silent */ }
   }
   RT_CHANNEL = null;
+  RT_STATUS = 'CLOSED';
   rtSetBadge('⚪ Live sync: lama xirin', 'var(--text3)');
 }
 
@@ -6126,29 +6427,35 @@ function rtSubscribe(){
 
   rtSetBadge('🟡 Live sync: isku xirya...', '#B45309');
 
-  RT_CHANNEL = client
-    .channel('app_state_rt_'+syncId)
-    .on('postgres_changes', {
-      event: 'UPDATE',
-      schema: 'public',
-      table: 'app_state',
-      filter: 'sync_id=eq.'+syncId
-    }, rtHandleChange)
-    .on('postgres_changes', {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'app_state',
-      filter: 'sync_id=eq.'+syncId
-    }, rtHandleChange)
-    .subscribe((status)=>{
+  let channel = client.channel('domains_rt_'+syncId);
+  Object.keys(CLOUD_DOMAIN_MAP).forEach(domain=>{
+    channel = channel
+      .on('postgres_changes', { event:'UPDATE', schema:'public', table:domain, filter:'user_id=eq.'+syncId }, (payload)=>rtHandleChange(domain, payload))
+      .on('postgres_changes', { event:'INSERT', schema:'public', table:domain, filter:'user_id=eq.'+syncId }, (payload)=>rtHandleChange(domain, payload));
+    // FIIRO: DELETE lama subscribe-gareynin — domain rows-ku marnaba lama
+    // tirtiro app-ka (hal saf/qof/table wuu joogaa waalibo), sidaas darteed
+    // DELETE handler kuma jiro architecture-kan (TASK 5).
+  });
+  channel = channel
+    .on('postgres_changes', { event:'UPDATE', schema:'public', table:'profiles', filter:'id=eq.'+syncId }, (payload)=>rtHandleChange('profiles', payload))
+    .on('postgres_changes', { event:'INSERT', schema:'public', table:'profiles', filter:'id=eq.'+syncId }, (payload)=>rtHandleChange('profiles', payload));
+
+  RT_CHANNEL = channel.subscribe((status)=>{
+      RT_STATUS = status;
       if(status === 'SUBSCRIBED'){
         RT_RETRY_DELAY = 2000; // dib u deji backoff-ka marka xiriirku guuleysto
         rtSetBadge('🟢 Live sync: shaqaynaya', '#16A34A');
+        // Realtime firfircoon -> poll-ku noqdo 'safety net' oo kaliya (60s)
+        if(typeof startPollSync==='function') startPollSync();
       } else if(status === 'CHANNEL_ERROR' || status === 'TIMED_OUT'){
         rtSetBadge('🔴 Live sync: khalad — isku dayaya...', '#DC2626');
         rtScheduleRetry();
+        // Realtime jaban -> poll-ku noqdo mid firfircoon (15s) si data-du
+        // aanay si fudud u daahin ilaa realtime-ku dib isu xiro.
+        if(typeof startPollSync==='function') startPollSync();
       } else if(status === 'CLOSED'){
         rtSetBadge('⚪ Live sync: xiran yahay', 'var(--text3)');
+        if(typeof startPollSync==='function') startPollSync();
       }
     });
 }
@@ -6161,29 +6468,51 @@ function rtScheduleRetry(){
   }, RT_RETRY_DELAY);
 }
 
-// Marka safka 'app_state' isbeddelo (qalab kale ayaa geliyay/beddelay xog),
-// ka soo qaad xogta cusub oo ku dhex dar app-ka — iyada oo aan la sameynayn
-// location.reload().
-function rtHandleChange(payload){
+// Marka safka hal qayb (domain table) isbeddelo (qalab kale ayaa geliyay/
+// beddelay xog), ka soo qaad xogta cusub ee QAYBTAAS OO KELIYA ku dar D
+// (DOMAIN-LEVEL record merge — qaybaha kale ee D marnaba lama taaban) — iyada
+// oo aan la sameynayn location.reload().
+function rtHandleChange(domain, payload){
   try{
     const row = payload && payload.new;
     if(!row || !row.data) return;
-    const remoteTime = new Date(row.updated_at).getTime();
-    const localTime = D._updated_at || 0;
-    // Haddii xogtan ay tahay tii aan naftaydu diri (echo), ama ay ka
-    // gaabsan tahay tan hadda jirta, iska indhaha ka fur.
-    if(!remoteTime || remoteTime <= localTime) return;
+    const remoteVersion = row.version;
+    const knownVersion = (D._domain_versions && D._domain_versions[domain]);
+    // VERSION waa primary comparison-ka. updated_at waa metadata/fallback
+    // oo kaliya — MA AHA kan go'aaminaya in xogta la aqbalo.
+    if(remoteVersion==null || (knownVersion!=null && remoteVersion <= knownVersion)) return;
+    const remoteTime = new Date(row.updated_at).getTime(); // metadata/fallback oo keliya
 
-    // Ku dar xogta cusub D (isla walaaca — object-kii hore lama beddelin,
-    // waxaa la buuxiyaa si dhammaan functions-ka isticmaalaya D ay isla
-    // markiiba arkaan xogta cusub, iyada oo aan location.reload() la isticmaalin).
-    Object.keys(D).forEach(k=>{ delete D[k]; });
-    Object.assign(D, row.data);
-    D._updated_at = remoteTime;
-    try{ localStorage.setItem('noloshayda_v3', JSON.stringify(D)); }catch(e){}
-
-    rtSoftRefresh();
-    if(typeof showToast==='function') showToast('🔄 Xogta waa la cusboonaysiiyay (qalab kale)', 'teal');
+    if(isDomainDirty(domain)){
+      // Qalabkan wuxuu leeyahay isbeddello LOCAL AH oo aan weli cloud-ka
+      // loo push-gareyn — HA ku dul qorin (overwrite) remote data. Isku dar
+      // (merge) adigoo isticmaalaya isla mergeDomainOnConflict() ee CAS-ka
+      // (pushOneDomain) horeba isticmaalo — labada isbeddel (kan aniga iyo
+      // kan qalabka kale) midna lama lumin doono.
+      const localPayload = buildDomainPayload(domain);
+      const mergedPayload = mergeDomainOnConflict(domain, localPayload, row.data);
+      applyDomainData(domain, mergedPayload, remoteTime, remoteVersion);
+      // MUHIIM: natiijada la isku dartay CLOUD-ka WELI kuma jirto (safka
+      // cloud-ku wuxuu hayaa row.data oo keliya, ma aha mergedPayload) —
+      // haddii aan LAST_PUSHED_SNAPSHOT-ka ka tagno sida applyDomainData()
+      // u dhigay (oo isaga qudhiisu isbarbardhigay mergedPayload-ka), push
+      // xiga wuxuu si khalad ah u fikiri lahaa "wax isbeddel ah lagama
+      // helin" oo mergedPayload-kan marnaba cloud-ka geli maayo. Sidaas
+      // darteed calaamadi domain-kan mar kale DIRTY si uu push xiga si
+      // dhab ah u diro natiijada la isku dartay.
+      delete LAST_PUSHED_SNAPSHOT[domain];
+      try{ localStorage.setItem('noloshayda_v3', JSON.stringify(D)); }catch(e){}
+      rtSoftRefresh();
+      if(typeof showToast==='function') showToast('🔄 Isbeddelladaada + kuwa qalabka kale waa la isku dartay', 'teal');
+      if(typeof queueCloudPush === 'function') queueCloudPush(); // dir natiijada la isku dartay, isticmaal existing CAS
+    } else {
+      // Domain-ku CLEAN yahay (isbeddel local ah lagama helin) — remote
+      // data si caadi ah u apply-garee.
+      applyDomainData(domain, row.data, remoteTime, remoteVersion);
+      try{ localStorage.setItem('noloshayda_v3', JSON.stringify(D)); }catch(e){}
+      rtSoftRefresh();
+      if(typeof showToast==='function') showToast('🔄 Xogta waa la cusboonaysiiyay (qalab kale)', 'teal');
+    }
   }catch(e){ console.error('Realtime update handling failed', e); }
 }
 
@@ -6209,35 +6538,87 @@ function rtSoftRefresh(){
 }
 
 /* ═══════════════════════════════════
-   POLL FALLBACK (dheeraad realtime-ka)
-   Haddii websocket-ka realtime uu hal ilbiriqsi ka daahay ama xiriirku
-   kala go'o, kani wuxuu 5 ilbiriqsi kasta si toos ah u hubiyaa cloud-ka
-   islamarkaana ku daraa isbeddel kasta oo maqan — iyada oo aan reload
-   la sameynayn. Waa "safety net", ma aha beddelka realtime-ka.
+   POLL FALLBACK (dheeraad realtime-ka) — TASK 4
+   Realtime waa PRIMARY. Poll-kan waa kaliya 'safety net':
+     - Realtime FIRFIRCOON (SUBSCRIBED)  -> 60s (kaliya backup kooban)
+     - Realtime JABAN/lama xirin        -> 15s (mid firfircoon si data
+       aanay si fudud u daahin ilaa realtime-ku dib isu xiro)
+   Si loo yareeyo culeyska database-ka (thousands of users), poll-ku wuxuu
+   marka hore akhriyaa KALIYA 'version,updated_at' (fudud, yar) dhammaan
+   17-ka table — 'data' JSONB-ga BUUXA waxaa la soo qaataa KALIYA
+   domain-yada version-kooda uu ka weynaaday version-ka ugu dambeeyay ee
+   la ogaa (2-phase — ma aha "fetch all tables always").
 ═══════════════════════════════════ */
 let POLL_SYNC_TIMER = null;
+const POLL_INTERVAL_CONNECTED = 60000;    // Realtime firfircoon -> 60s
+const POLL_INTERVAL_DISCONNECTED = 15000; // Realtime jaban -> 15s
+
 async function pollSyncCheck(silent){
   const client = sbClient(); const syncId = sbSyncId();
   if(!client || !syncId) return;
   try{
-    const { data, error } = await client.from('app_state').select('data,updated_at').eq('sync_id', syncId).maybeSingle();
-    if(error || !data) return;
-    const remoteTime = new Date(data.updated_at).getTime();
-    const localTime = D._updated_at || 0;
-    if(!remoteTime || remoteTime <= localTime) return;
-    Object.keys(D).forEach(k=>{ delete D[k]; });
-    Object.assign(D, data.data);
-    D._updated_at = remoteTime;
-    try{ localStorage.setItem('noloshayda_v3', JSON.stringify(D)); }catch(e){}
-    rtSoftRefresh();
-    if(!silent && typeof showToast==='function') showToast('🔄 Xogta waa la cusboonaysiiyay (qalab kale)', 'teal');
+    const allDomains = [...Object.keys(CLOUD_DOMAIN_MAP), 'profiles'];
+    // PHASE 1 — fudud: kaliya version+updated_at (ma aha 'data' weyn)
+    const probes = await Promise.all(allDomains.map(domain=>{
+      const filterCol = domain==='profiles' ? 'id' : 'user_id';
+      return client.from(domain).select('version,updated_at').eq(filterCol, syncId).maybeSingle()
+        .then(({data,error})=>({domain, data, error}))
+        .catch(e=>({domain, data:null, error:e}));
+    }));
+    const toFetch = [];
+    for(const r of probes){
+      if(r.error || !r.data) continue;
+      const knownVersion = (D._domain_versions && D._domain_versions[r.domain]);
+      if(knownVersion==null || r.data.version > knownVersion) toFetch.push(r.domain);
+    }
+    if(!toFetch.length) return; // wax isbeddel ah lagama helin — query ugu jabsan (2 SELECT column oo kaliya, table kasta)
+
+    // PHASE 2 — kaliya domain-yada isbeddelay ayaa 'data' buuxa loo soo qaataa
+    const fetched = await Promise.all(toFetch.map(domain=>{
+      const filterCol = domain==='profiles' ? 'id' : 'user_id';
+      return client.from(domain).select('data,updated_at,version').eq(filterCol, syncId).maybeSingle()
+        .then(({data,error})=>({domain, data, error}))
+        .catch(e=>({domain, data:null, error:e}));
+    }));
+    let changed = false;
+    for(const r of fetched){
+      if(r.error || !r.data) continue;
+      const remoteVersion = r.data.version;
+      const knownVersion = (D._domain_versions && D._domain_versions[r.domain]);
+      // FINAL apply decision-ku waa VERSION-FIRST (ma aha updated_at) —
+      // dib u xaqiiji halkan (Phase 2) maadaama wakhti u dhexeeya Phase 1
+      // iyo Phase 2 uu la yaabi karo isbeddel kale (tusaale push
+      // dhexdhexaad ah oo qofkan qudhiisu sameeyay).
+      if(remoteVersion==null || (knownVersion!=null && remoteVersion <= knownVersion)) continue;
+      const remoteTime = new Date(r.data.updated_at).getTime(); // metadata/fallback oo keliya
+
+      if(isDomainDirty(r.domain)){
+        // Isbeddello LOCAL AH oo aan weli cloud-ka loo push-gareyn ayaa
+        // jira — HA overwrite-gareyn, isku dar (fiiri sharaxaad buuxa
+        // oo la mid ah tan rtHandleChange()).
+        const localPayload = buildDomainPayload(r.domain);
+        const mergedPayload = mergeDomainOnConflict(r.domain, localPayload, r.data.data);
+        applyDomainData(r.domain, mergedPayload, remoteTime, remoteVersion);
+        delete LAST_PUSHED_SNAPSHOT[r.domain]; // ku qasab push xiga inuu diro natiijada la isku dartay
+        if(typeof queueCloudPush === 'function') queueCloudPush();
+      } else {
+        applyDomainData(r.domain, r.data.data, remoteTime, remoteVersion);
+      }
+      changed = true;
+    }
+    if(changed){
+      try{ localStorage.setItem('noloshayda_v3', JSON.stringify(D)); }catch(e){}
+      rtSoftRefresh();
+      if(!silent && typeof showToast==='function') showToast('🔄 Xogta waa la cusboonaysiiyay (qalab kale)', 'teal');
+    }
   }catch(e){ /* silent — kani waa 'safety net' oo kaliya, khalad uma jiro user-ka la sheegayo */ }
 }
 function startPollSync(){
   clearInterval(POLL_SYNC_TIMER);
+  const interval = (RT_STATUS === 'SUBSCRIBED') ? POLL_INTERVAL_CONNECTED : POLL_INTERVAL_DISCONNECTED;
   POLL_SYNC_TIMER = setInterval(()=>{
     if(document.visibilityState==='visible' && sbConfig()) pollSyncCheck();
-  }, 5000);
+  }, interval);
 }
 function stopPollSync(){
   clearInterval(POLL_SYNC_TIMER);
@@ -6252,10 +6633,35 @@ function stopPollSync(){
 //     halkan waxaan kaliya diraynaa Supabase marka xiriirku soo noqdo.
 window.addEventListener('online', ()=>{
   showToast('🌐 Internet-ku wuu soo noqday — xogta offline-ka lagu galiyay ayaa la dhaadaacayaa...', 'blue');
-  if(sbConfig()){
-    if(!RT_CHANNEL) rtSubscribe();
-    if(typeof pushToCloud === 'function') pushToCloud(false);
-  }
+  // OFFLINE ACCESS: marka xiriirku soo noqdo, xaqiiji session-ka DHABTA AH
+  // ee Supabase (ma aha kaliya calaamadda local cache-ka ee 'higsad_offline_auth')
+  // — haddii uu run ahaantii dhacay (account la tirtiray/password meel kale
+  // laga beddelay), dib ugu celi login screen-ka si nadiif ah; haddii kale,
+  // sii wad sync-ga caadiga ah.
+  const agc = typeof agClient==='function' ? agClient() : null;
+  const resumeSync = ()=>{
+    if(sbConfig()){
+      if(!RT_CHANNEL) rtSubscribe();
+      if(typeof pushToCloud === 'function') pushToCloud(false);
+    }
+  };
+  if(agc){
+    agc.auth.getSession().then(({data})=>{
+      if(!data || !data.session){
+        // Session-ku run ahaantii wuu dhacay — dib ugu celi login-ka.
+        if(typeof rtUnsubscribe === 'function') rtUnsubscribe();
+        if(typeof stopPollSync === 'function') stopPollSync();
+        try{ localStorage.removeItem('higsad_offline_auth'); }catch(e){}
+        const gate = document.getElementById('auth-gate'); if(gate) gate.classList.remove('hidden');
+        const sb = document.getElementById('sidebar'); if(sb) sb.style.display = 'none';
+        const main = document.getElementById('app-main'); if(main) main.style.display = 'none';
+        if(typeof agShowLogin==='function') agShowLogin();
+        if(typeof showToast==='function') showToast('🔒 Fadlan mar kale soo gal — session-kaagii wuu dhacay', 'red');
+        return;
+      }
+      resumeSync();
+    }).catch(()=>resumeSync()); // khalad network ah oo kale — ha logout-gareynin qof si xun
+  } else resumeSync();
 });
 document.addEventListener('visibilitychange', ()=>{
   if(document.visibilityState === 'visible' && sbConfig() && !RT_CHANNEL){
@@ -12099,12 +12505,14 @@ function renderBadgeScrollbar(){
    SETTINGS — TABS
 ══════════════════════════════════════════ */
 function showSetTab(tab, btn){
-  ['data','system','recycle'].forEach(t=>{
+  ['data','notifications','system','recycle'].forEach(t=>{
     const el=document.getElementById('set-'+t); if(el)el.style.display=t===tab?'block':'none';
   });
+  const sys2=document.getElementById('set-system-2'); if(sys2)sys2.style.display=tab==='system'?'block':'none';
   document.querySelectorAll('#page-settings .btn-sm').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
   if(tab==='data') renderSettingsData();
+  if(tab==='notifications' && typeof notificationSystem!=='undefined') notificationSystem.init();
   if(tab==='system') openSettings();
   if(tab==='recycle' && typeof renderRecycleBin==='function') renderRecycleBin();
 }
@@ -12422,6 +12830,9 @@ const notificationSystem = {
     const soundType=D.notif_sound||'beep';
     document.querySelectorAll('#notif-sound-picker .btn-sm, [id^="sound-btn-"]').forEach(b=>b.classList.remove('active'));
     document.getElementById('sound-btn-'+soundType)?.classList.add('active');
+    const durVal = D.notif_sound_duration || 60;
+    const durSlider=document.getElementById('sound-duration-slider'); if(durSlider) durSlider.value=durVal;
+    const durInput=document.getElementById('sound-duration-input'); if(durInput) durInput.value=durVal;
     if('Notification' in window && Notification.permission==='granted') this.startChecks();
     this.checkAnnouncement();
   },
@@ -12577,6 +12988,16 @@ const notificationSystem = {
     this.playSound(type);
   },
 
+  // Immisa ilbiriqsi dhawaaqu/gariirku sii socdo marka farriin timaado (5–120s,
+  // user-ku Settings-ka ayuu ka beddeli karaa — fiiri "⏱️ Muddada dhawaaqa").
+  setSoundDuration(seconds){
+    const val = Math.max(5, Math.min(120, parseInt(seconds,10)||60));
+    D.notif_sound_duration = val; S();
+    const durSlider=document.getElementById('sound-duration-slider'); if(durSlider) durSlider.value=val;
+    const durInput=document.getElementById('sound-duration-input'); if(durInput) durInput.value=val;
+    showToast('✅ Muddada dhawaaqa: '+val+' ilbiriqsi','blue');
+  },
+
   // Dhawaaqa + gariirka way soo noqnoqdaan ilaa 1 daqiiqo (60s, sida alarm) — 'alarm'
   // wuxuu socdaa 2 daqiiqo (120s) oo aad ugu dhow isku xigxiga, sida spec-ku u baahan yahay
   // "High priority notification wuxuu yeelan karaa presentation xooggan".
@@ -12586,7 +13007,9 @@ const notificationSystem = {
     if(!type || type==='none') return;
 
     const intervalMs = type==='gentle' ? 1300 : (type==='alarm' ? 900 : 1800);
-    const maxMs = type==='alarm' ? 120000 : 60000;
+    // Muddada (seconds) waxaa maamula user-ka Settings-ka ("⏱️ Muddada
+    // dhawaaqa") — haddii uusan weli doorasho, isticmaal default-kii hore.
+    const maxMs = D.notif_sound_duration ? D.notif_sound_duration*1000 : (type==='alarm' ? 120000 : 60000);
     const tick = ()=>{ this._playTone(type); this.vibrate(type); };
     tick(); // dhawaaqa/gariirka koowaad isla markiiba
     this._soundIntervalId = setInterval(tick, intervalMs);
@@ -13069,6 +13492,26 @@ function fireNotification(title, body, tag, meta){ notificationEngine.notify(tit
 function playNotificationSound(type){ notificationSystem.playSound(type); }
 function vibrateDevice(type){ notificationSystem.vibrate(type); }
 function setNotifSound(type){ notificationSystem.setSound(type); }
+function setNotifSoundDuration(seconds){ notificationSystem.setSoundDuration(seconds); }
+// ⏱️ Number-input ⇄ Slider two-way sync ee Muddada Dhawaaqa (spec: gacanta + slider labaduba)
+function notifSoundDurFromInput(v){
+  // Marka la qorayo (live) — slider-ka kaliya la jaanqaadiyo, kaydinta/clamp-ka ha lagu sameynin ilaa la dhammeeyo (onchange/blur)
+  const n = parseInt(v, 10);
+  if(!isNaN(n)){
+    const slider = document.getElementById('sound-duration-slider');
+    if(slider) slider.value = Math.max(5, Math.min(120, n));
+  }
+}
+function notifSoundDurFromSlider(v){
+  const input = document.getElementById('sound-duration-input');
+  if(input) input.value = v;
+}
+function notifSoundDurCommit(v){
+  // Marka la dhammeeyo qorista (Enter/blur/change) — clamp 5–120, tiro-kaliya, kaydi
+  let n = parseInt(v, 10);
+  if(isNaN(n)) n = D.notif_sound_duration || 60;
+  setNotifSoundDuration(n); // setSoundDuration() horeba wuu clamp gareeyaa (5–120) oo wuxuu dib u cusboonaysiinayaa input-ka + slider-ka labadaba
+}
 function toggleDND(checked){ notificationSystem.toggleDND(checked); }
 function checkReminders(){ notificationSystem.checkAll(); }
 function updateNotifStatus(){ notificationSystem.updateStatusUI(); }
@@ -20114,7 +20557,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     'cibaado'    : {cat:'Xudunta',    color:'red',   icon:'🤲'},
     'hawlaha'    : {cat:'Xudunta',    color:'red',   icon:'✅'},
     'caadooyinka': {cat:'Xudunta',    color:'red',   icon:'🚫'},
-    'diiwaanka'  : {cat:'Xudunta',    color:'red',   icon:'📔'},
+    'diiwaanka'  : {cat:'Koboca',     color:'green', icon:'📔'},
     'maal'       : {cat:'Xudunta',    color:'red',   icon:'💰'},
     'abaalmarin' : {cat:'Xudunta',    color:'red',   icon:'🎁'},
     'waxbarasho' : {cat:'Horumarka',  color:'amber', icon:'🎓'},
@@ -21680,42 +22123,18 @@ function filterGlobalArchive(cat, btn){
   renderGlobalArchive();
 }
 
-/* ── Cloud auto-sync on load (silent, last-write-wins) ── */
-/* Silent cloud reconcile — compares timestamps, no confirm() popup.
-   Used both on normal page load and right after auth-gate login/signup. */
-async function silentCloudSync(){
-  const cfg = sbConfig();
-  if(!cfg) return;
-  if(!navigator.onLine){ console.warn('Cloud auto-sync skipped: offline'); return; }
-  const client = sbClient(); if(!client) return;
-  try{
-    const { data, error } = await client.from('app_state').select('data,updated_at').eq('sync_id', cfg.syncId).maybeSingle();
-    if(error) throw error;
-    if(!data){ pushToCloud(false); return; } // nothing in cloud yet, push local up
-    const remoteTime = new Date(data.updated_at).getTime();
-    const localTime = D._updated_at || 0;
-    if(remoteTime > localTime + 3000){
-      // cloud has newer data than this device
-      localStorage.setItem('noloshayda_v3', JSON.stringify(data.data));
-      location.reload();
-    } else if(localTime > remoteTime + 3000){
-      pushToCloud(false);
-    }
-  }catch(e){
-    // Ilaalin: qaar ka mid ah khaladaadka network/preview-sandbox (tusaale: DataCloneError
-    // marka fariin internal ah la isku dayo in la postMessage-eeyo Response/Headers object)
-    // kuma imaan xogta app-ka — waa xaddidaad browser/sandbox ah, sidaa darteed halkan
-    // silently ayaan uga fogaanaynaa inaan wax badalno app state-ka.
-    console.warn('Cloud auto-sync skipped:', sbErrMsg(e));
-  }
-}
-(function autoCloudSync(){
-  const cfg = sbConfig();
-  if(!cfg) return; // no cloud configured, localStorage-only mode (auth-gate hasn't run yet)
-  // Sug in bogga la shubo oo network-ka la hubiyo ka hor intaan isku dayin xiriirka cloud-ka
-  window.addEventListener('online', ()=>{ setTimeout(silentCloudSync, 500); });
-  setTimeout(silentCloudSync, 1200);
-})();
+/* ── Cloud auto-sync on load — RETIRED ──
+   Habkan hore wuxuu ku shaqayn jiray hal saf 'app_state' oo keliya, oo
+   marka mid ka mid ah qalabyada uu is-arkay inuu "ka dambeeyay" uu si
+   xun (location.reload() + full overwrite) ugu dul qori jiray D-ga oo
+   dhan. Tani waxay is khilaafi lahayd habka cusub ee DOMAIN-LEVEL record-ka ah
+   (pollSyncCheck/rtSubscribe/migrateLegacyAppStateIfNeeded ee kor ku
+   qoran), oo laga yaabo inay dib-u-celiso xog cusub oo qaybo gaar ah
+   (per-domain) si khalad ah. Waxaa lagu beddelay no-op — call-sites-ka
+   hore (6 meelood) waa la ilaaliyay si aysan u jabin, laakiin hadda
+   waxba ma qabanayaan; sync-ka dhabta ahi wuxuu ka dhacaa 100%
+   migrateLegacyAppStateIfNeeded() + pollSyncCheck()/rtSubscribe(). */
+async function silentCloudSync(){ /* retired — fiiri comment kore */ }
 
 /* ── DETAILED ANALYSIS FUNCTIONS ── */
 function switchSubTab(button, category, subTab) {
@@ -22028,6 +22447,16 @@ function agShowForgot(){
   const tl=document.getElementById('ag-tagline'); if(tl) tl.textContent='Password-ka waan ilaaway?';
 }
 function agEnterApp(email){
+  // OFFLINE ACCESS: calaamadi in qalabkan (device-kan) si guul leh loogu
+  // xaqiijiyey account-kan — kaydka waa userId + email + waqti oo kaliya
+  // (WAXBA lama kaydiyo password ah, mana ahan session/token dhab ah — waa
+  // kaliya calaamad "qalabkan hore ayaa loo ogolaaday account-kan", oo
+  // kaliya loo isticmaali doono marka internet-ku ka maqan yahay startup-ka
+  // xiga, fiiri agInit()).
+  try{
+    const uid = typeof sbSyncId==='function' ? sbSyncId() : null;
+    if(uid) localStorage.setItem('higsad_offline_auth', JSON.stringify({ userId: uid, email: email||'', ts: Date.now() }));
+  }catch(e){}
   const gate = document.getElementById('auth-gate'); if(gate) gate.classList.add('hidden');
   const sb = document.getElementById('sidebar'); if(sb) sb.style.display = '';
   const main = document.getElementById('app-main'); if(main) main.style.display = '';
@@ -22037,7 +22466,11 @@ function agEnterApp(email){
   // (si aan D-ga maskaxda ahaan madhan looga dhigin isla markaana looga
   // hortago in xogtaas madhan lagu dul qoro (overwrite) xogta cloud-ka
   // dhabta ah ee horeba jirta, ka hor inta S() aan wax kale kaydin).
-  if(typeof pollSyncCheck === 'function') pollSyncCheck(true);
+  if(typeof migrateLegacyAppStateIfNeeded === 'function'){
+    migrateLegacyAppStateIfNeeded().finally(()=>{
+      if(typeof pollSyncCheck === 'function') pollSyncCheck(true);
+    });
+  } else if(typeof pollSyncCheck === 'function') pollSyncCheck(true);
   if(typeof rtSubscribe === 'function') rtSubscribe();
   if(typeof startPollSync === 'function') startPollSync();
   if(typeof updateHeroName === 'function') updateHeroName();
@@ -22282,9 +22715,11 @@ async function agHandleSetNewPassword(e){
 function agLogout(){
   if(typeof rtUnsubscribe === 'function') rtUnsubscribe();
   if(typeof stopPollSync === 'function') stopPollSync();
+  clearTimeout(SB_PUSH_TIMER); // joojiye push kasta oo sugaya (debounced) si uusan account-ka xiga u dhicin
   const client = agClient();
   if(client){ client.auth.signOut().catch(e=>console.warn('signOut failed:', typeof sbErrMsg==='function'?sbErrMsg(e):e)); }
   try{ localStorage.removeItem('ils_supabase_cfg'); }catch(e){}
+  try{ localStorage.removeItem('higsad_offline_auth'); }catch(e){}
   // MUHIIM: tirtir xogtii app-ka ee local-ka ku jirtay (D-ga oo dhan, oo ay
   // ku jirto D.profile.name) — haddii kale, qof kale oo isla browser-kan ku
   // soo gala (ama account cusub oo la sameeyo) wuxuu ku dhici lahaa magaca/
@@ -22308,6 +22743,7 @@ async function agInit(){
       if(event === 'SIGNED_OUT'){
         if(typeof rtUnsubscribe === 'function') rtUnsubscribe();
         if(typeof stopPollSync === 'function') stopPollSync();
+        try{ localStorage.removeItem('higsad_offline_auth'); }catch(e){}
         const gate = document.getElementById('auth-gate'); if(gate) gate.classList.remove('hidden');
         const sb = document.getElementById('sidebar'); if(sb) sb.style.display = 'none';
         const main = document.getElementById('app-main'); if(main) main.style.display = 'none';
@@ -22315,11 +22751,47 @@ async function agInit(){
         if(typeof showToast==='function') showToast('🔒 Fadlan mar kale soo gal — session-kaagii wuu dhacay', 'red');
       }
     });
-    const { data } = await client.auth.getSession();
-    if(data && data.session){
-      agEnsureCloudConfig(data.session.user.id);
-      agEnterApp(data.session.user.email);
-      if(typeof silentCloudSync === 'function') silentCloudSync();
+
+    let entered = false;
+    try{
+      const { data } = await client.auth.getSession();
+      if(data && data.session){
+        agEnsureCloudConfig(data.session.user.id);
+        agEnterApp(data.session.user.email);
+        entered = true;
+        if(typeof silentCloudSync === 'function') silentCloudSync();
+      }
+    }catch(sessionErr){
+      // Khalad (badanaa network/offline) ayaa dhacay markii session-ka la
+      // hubinayay — HA ku qasbin login screen-ka isla markiiba; fiiri
+      // fallback-ka OFFLINE ACCESS hoose ka hor intaan quseynin.
+      console.warn('Session check failed (laga yaabo offline):', sessionErr);
+    }
+
+    // OFFLINE ACCESS FALLBACK: haddii session-ka Supabase aan la
+    // xaqiijin (network jabay/getSession() fashilantay) OO internet-ku
+    // hadda ka maqan yahay qalabkan — hubi in qalabkan HORE loogu
+    // xaqiijiyey account-kan (calaamad la kaydiyay agEnterApp() markii
+    // ugu horreysay ee login guuleystay), oo cloud-config-ku (syncId)
+    // weli u dhigmo isla account-kaas — haddii labaduba run yihiin, si
+    // toos ah gudaha app-ka ugu gudub adigoo isticmaalaya xogta local
+    // cache-ka ah, HA tusin login/signup screen-ka mar kale.
+    // MUHIIM: haddii internet-ku SHAQEYNAYO (online) oo session la waayay,
+    // taasi waa logout dhab ah — SIDAAS lama gudbin doono, screen-ka login
+    // ayaa sii muuqan doona (sax ah, ma ahan bug).
+    if(!entered && !navigator.onLine){
+      try{
+        const cached = JSON.parse(localStorage.getItem('higsad_offline_auth')||'null');
+        const cfg = sbConfig();
+        if(cached && cached.userId && cfg && cfg.syncId === cached.userId){
+          agEnterApp(cached.email);
+          if(typeof showToast==='function') showToast('📴 Offline — waxaad isticmaalaysaa xogta local-ka ah, waxaana si toos ah loo sync-gareyn doonaa marka internet-ku soo noqdo', 'amber');
+        }
+        // Haddii cache-gu ma jiro (qalabkan waligiis loogu login-gareyn), ama
+        // syncId-gu isku mid ma aha — HA gudbin, login/signup screen-ka
+        // (default state, horena u muuqday) ayaa sii muuqan doona, sida
+        // ay tahay in loo baahdo internet si loo sameeyo login/signup cusub.
+      }catch(e){ /* cache qaldan/duugoobay — iska daa, login screen-ka sii muuqan */ }
     }
   }catch(e){ console.error('Auth session check failed', e); }
 }
@@ -22349,53 +22821,5 @@ document.addEventListener('DOMContentLoaded', initDashboardOnLoad);
 agInit();
 </script>
 
-
-<!-- ══════════ DEBUG: Realtime console listener (app_state) ══════════
-     FIIRO GAAR AH: Isla supabase-js CDN-ka horeba waa la soo shubay
-     (fiiri script-ka 'defer' ee kore), sidaa darteed halkan lama soo
-     shubin mar labaad. Waxaan sugnay 'load' event-ka si aan u
-     hubino in window.supabase (library-ga) horeba la soo shubay ka
-     hor intaan la isticmaalin — haddii kale wuxuu ku dhici lahaa
-     khalad "supabase is not defined/undefined". Waxaan sidoo kale
-     beddelay magaca variable-ka 'supabase' -> 'dbgClient' si aan uga
-     fogaano is-tixraaca khaldan ee sababi lahaa
-     "Cannot access 'supabase' before initialization". -->
-<script>
-window.addEventListener('load', ()=>{
-  if(!window.supabase){ console.warn('Debug realtime listener: supabase-js lama helin.'); return; }
-  try{
-    // Isticmaal client-ka HORE ee app-ku horeba abuuray (agClient/sbClient) haddii
-    // uu jiro, halkii aan abuuri lahayn mid CUSUB — sidaas looga fogaanayaa
-    // digniinta "Multiple GoTrueClient instances detected" (labo GoTrueClient oo
-    // isku isticmaala localStorage key-ga auth ee isku mid ah, taasoo sababi karta
-    // dhaqan aan la saadaalin karin marka session-ku isbedelo).
-    let dbgClient = null;
-    if(typeof agClient === 'function') dbgClient = agClient();
-    if(!dbgClient && typeof sbClient === 'function') dbgClient = sbClient();
-    if(!dbgClient){
-      // Fallback: haddii aan client hore la helin, samee mid CUSUB laakiin
-      // persistSession la joojiyay si uusan ugu qasmin auth storage-ka
-      // ee client-yada kale — kani wuxuu kaliya u shaqeeyaa akhris (SELECT).
-      dbgClient = window.supabase.createClient(
-        'https://gulerlrvckanaskcvoxc.supabase.co',
-        'sb_publishable_XEIvVU3Hy_AWWIA6gEA0OQ__lCWg1Nj',
-        { auth: { persistSession: false } }
-      );
-    }
-    dbgClient
-      .channel('realtime-noloshayda-debug')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'app_state' },
-        (payload) => {
-          console.log('Isbeddel cusub ayaa ka dhacay app_state:', payload.new);
-        }
-      )
-      .subscribe();
-  }catch(e){
-    console.warn('Debug realtime listener failed:', e && e.message ? e.message : e);
-  }
-});
-</script>
 </body>
 </html>
