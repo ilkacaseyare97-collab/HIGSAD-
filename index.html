@@ -155,6 +155,8 @@ button.analysis-tab[onclick*="'qoraal')"]{--tabc:#64748B}
 .ph p{font-size:12.5px;color:rgba(255,255,255,.72);position:relative;margin-top:3px}
 .ph-teal{background:linear-gradient(130deg,#134E4A 0%,#0F766E 55%,#2DD4BF 100%)}
 .ph-green{background:linear-gradient(130deg,#14532D 0%,#15803D 55%,#22C55E 100%)}
+.hawl-hero-check{background:#fff;width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;filter:none;border:3px solid #16A34A;box-shadow:0 3px 8px rgba(0,0,0,.18)}
+@media(max-width:640px){.hawl-hero-check{width:40px;height:40px;font-size:20px;border-radius:11px}}
 .ph-blue{background:linear-gradient(130deg,#1E3A8A 0%,#2563EB 55%,#60A5FA 100%)}
 .ph-amber{background:linear-gradient(130deg,#9A3412 0%,#C2410C 55%,#F59E0B 100%)}
 .ph-purple{background:linear-gradient(130deg,#4C1D95 0%,#7C3AED 55%,#8B5CF6 100%)}
@@ -373,6 +375,27 @@ textarea.inp{resize:vertical;min-height:80px;line-height:1.6}
 .step-card:hover .step-del{opacity:1}
 .step-del:hover{color:var(--red)}
 @media(max-width:640px){.step-num{flex-basis:56px;min-height:52px}.step-num-n{font-size:15px}.step-num-s{font-size:7.5px}}
+
+/* ── HAWLAHA (redesigned task rows: time-badge | card | num-badge) ── */
+.hawl-list{padding:2px 0}
+.hawl-row{display:flex;align-items:stretch;border-radius:14px;overflow:hidden;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);background:var(--surface);cursor:pointer;transition:box-shadow .15s,transform .15s}
+.hawl-row:hover{box-shadow:0 4px 14px rgba(0,0,0,.10);transform:translateY(-1px)}
+.hawl-end{flex:0 0 62px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;padding:6px 2px}
+.hawl-end-v{font-size:14px;font-weight:800;line-height:1}
+.hawl-end-l{font-size:8px;font-weight:700;opacity:.9;text-transform:none;margin-top:2px}
+.hawl-mid{flex:1;display:flex;align-items:center;gap:10px;padding:9px 12px;min-width:0}
+.hawl-cb{width:19px;height:19px;border-radius:5px;border:2px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;flex:0 0 19px;font-size:11px;color:#fff;transition:all .15s}
+.hawl-row.done .hawl-cb{background:var(--green);border-color:var(--green)}
+.hawl-ic{width:36px;height:36px;flex:0 0 36px;border-radius:10px;background:var(--surface);border:1px solid var(--border-l);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.hawl-body{flex:1;min-width:0}
+.hawl-title{font-weight:700;font-size:12.5px;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hawl-row.done .hawl-title{text-decoration:line-through;color:var(--text3)}
+.hawl-desc{font-size:10.5px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hawl-pill{flex:0 0 auto;font-size:9.5px;font-weight:700;padding:4px 9px;border-radius:20px;white-space:nowrap}
+.hawl-del{flex:0 0 auto;border:none;background:none;color:var(--text4);font-size:11px;cursor:pointer;padding:2px 4px;opacity:0;transition:opacity .15s}
+.hawl-row:hover .hawl-del{opacity:1}
+.hawl-del:hover{color:var(--red)}
+@media(max-width:640px){.hawl-end{flex-basis:48px}.hawl-end-v{font-size:11.5px}.hawl-end-l{font-size:7px}.hawl-desc,.hawl-pill{display:none}.hawl-ic{width:30px;height:30px;flex:0 0 30px;font-size:15px}}
 
 /* ── SCHEDULE (Jadwal) ── */
 .sched-grid{display:grid;grid-template-columns:56px 1fr;gap:0;margin-bottom:20px}
@@ -2130,6 +2153,7 @@ body.editing #settings-edit-mode{display:block !important}
   <!-- ════ CAADOOYINKA ════ -->
   <div class="page" id="page-caadooyinka">
     <div class="ph ph-red"><div class="em">🚫</div><h1 data-ed contenteditable="false">Caadooyinka</h1><p data-ed contenteditable="false">Wanaagsan ku dar, xun ka fogow</p></div>
+    <div class="pg-maamul-chip" onclick="openManageHabits()"><span class="pg-maamul-ic">🚫</span> Maamul Caadooyinka</div>
 
     <!-- Date nav -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
@@ -2148,38 +2172,12 @@ body.editing #settings-edit-mode{display:block !important}
       <div class="ph-lbl bad">🔴 Ka Fogaaday Caado (Xun)<span class="sb" id="hab-badge">0/5</span></div>
     </div>
 
-    <div class="pair-list">
-      <div class="pair-row">
-        <div class="hc hc-ribbon hab-good" style="--rc:#F2A93B" onclick="toggleHabG(this)"><div class="rc-num">01</div><div class="hc-i"><div class="hc-n" data-ed contenteditable="false">Quraan Akhris</div><div class="hc-d" data-ed contenteditable="false">Maalin kasta Qur'aanka akhri</div></div><div class="hc-em">📖</div><div class="hc-tog"></div></div>
-        <div class="pair-mid">⇄</div>
-        <div class="hc hc-ribbon hab-bad rev" style="--rc:#EC407A" onclick="toggleHab(this)"><div class="hc-tog"></div><div class="hc-em">📱</div><div class="hc-i"><div class="hc-n" data-ed contenteditable="false">Baraha Bulshada</div><div class="hc-d" data-ed contenteditable="false">Xaddid isticmaalka baraha bulshada</div></div><div class="rc-num">06</div></div>
-      </div>
-      <div class="pair-row">
-        <div class="hc hc-ribbon hab-good" style="--rc:#14B8A6" onclick="toggleHabG(this)"><div class="rc-num">02</div><div class="hc-i"><div class="hc-n" data-ed contenteditable="false">Sunayaasha Tuko</div><div class="hc-d" data-ed contenteditable="false">Ku dadaal salaadaha sunnaha</div></div><div class="hc-em">🕌</div><div class="hc-tog"></div></div>
-        <div class="pair-mid">⇄</div>
-        <div class="hc hc-ribbon hab-bad rev" style="--rc:#DC2626" onclick="toggleHab(this)"><div class="hc-tog"></div><div class="hc-em">📵</div><div class="hc-i"><div class="hc-n" data-ed contenteditable="false">Waqti Lumiska</div><div class="hc-d" data-ed contenteditable="false">Waqtiga wax faa'iido leh ku bixi</div></div><div class="rc-num">07</div></div>
-      </div>
-      <div class="pair-row">
-        <div class="hc hc-ribbon hab-good" style="--rc:#3B82F6" onclick="toggleHabG(this)"><div class="rc-num">03</div><div class="hc-i"><div class="hc-n" data-ed contenteditable="false">Runta</div><div class="hc-d" data-ed contenteditable="false">Been sheegidda iska ilaali</div></div><div class="hc-em">✅</div><div class="hc-tog"></div></div>
-        <div class="pair-mid">⇄</div>
-        <div class="hc hc-ribbon hab-bad rev" style="--rc:#F4511E" onclick="toggleHab(this)"><div class="hc-tog"></div><div class="hc-em">🗣️</div><div class="hc-i"><div class="hc-n" data-ed contenteditable="false">Muranka</div><div class="hc-d" data-ed contenteditable="false">Dood badan iska ilaali</div></div><div class="rc-num">08</div></div>
-      </div>
-      <div class="pair-row">
-        <div class="hc hc-ribbon hab-good" style="--rc:#43A047" onclick="toggleHabG(this)"><div class="rc-num">04</div><div class="hc-i"><div class="hc-n" data-ed contenteditable="false">Jimicsi</div><div class="hc-d" data-ed contenteditable="false">Jirkaaga si joogto ah u daryeel</div></div><div class="hc-em">🏋️</div><div class="hc-tog"></div></div>
-        <div class="pair-mid">⇄</div>
-        <div class="hc hc-ribbon hab-bad rev" style="--rc:#64748B" onclick="toggleHab(this)"><div class="hc-tog"></div><div class="hc-em">😴</div><div class="hc-i"><div class="hc-n" data-ed contenteditable="false">Caajiska</div><div class="hc-d" data-ed contenteditable="false">Dib-u-dhigashada iska daa</div></div><div class="rc-num">09</div></div>
-      </div>
-      <div class="pair-row">
-        <div class="hc hc-ribbon hab-good" style="--rc:#FF7043" onclick="toggleHabG(this)"><div class="rc-num">05</div><div class="hc-i"><div class="hc-n" data-ed contenteditable="false">Ixtiraamka</div><div class="hc-d" data-ed contenteditable="false">Dadka si xushmad leh ula dhaqan</div></div><div class="hc-em">🤝</div><div class="hc-tog"></div></div>
-        <div class="pair-mid">⇄</div>
-        <div class="hc hc-ribbon hab-bad rev" style="--rc:#8B5CF6" onclick="toggleHab(this)"><div class="hc-tog"></div><div class="hc-em">📲</div><div class="hc-i"><div class="hc-n" data-ed contenteditable="false">Taleefanka</div><div class="hc-d" data-ed contenteditable="false">Xad-dhaafka isticmaalka yaree</div></div><div class="rc-num">10</div></div>
-      </div>
-    </div>
+    <div class="pair-list" id="hab-pair-list"><!-- rendered by JS: renderHabitsList() --></div>
 
     <div class="pair-summary">
       <div class="ps-row"><span class="ps-lbl">🟢 Sameeyay</span><div class="pb-tr"><div class="pb-fi fg" id="habg-pb" style="width:0%"></div></div><span class="ps-val" id="habg-pct">0%</span></div>
       <div class="ps-row"><span class="ps-lbl">🔴 Ka Fogaaday</span><div class="pb-tr"><div class="pb-fi fg" id="hab-pb" style="width:0%"></div></div><span class="ps-val" id="hab-pct">0%</span></div>
-      <div class="ps-total">⭐ Wadarta Guud: <span id="hab-total-n">0</span>/10 (<span id="hab-total-pct">0%</span>)</div>
+      <div class="ps-total">⭐ Wadarta Guud: <span id="hab-total-n">0</span>/<span id="hab-total-max">10</span> (<span id="hab-total-pct">0%</span>)</div>
     </div>
 
     <div style="display:flex;gap:10px;margin-top:6px">
@@ -2767,10 +2765,10 @@ body.editing #settings-edit-mode{display:block !important}
 
   <!-- ════ HAWLAHA ════ -->
   <div class="page" id="page-hawlaha">
-    <div class="ph ph-green"><div class="em">✅</div><h1 data-ed contenteditable="false">Hawlaha</h1><p data-ed contenteditable="false">Maalin kasta hawshaada xifdi</p></div>
+    <div class="ph ph-green"><div class="em hawl-hero-check">✅</div><h1 data-ed contenteditable="false">Hawlaha</h1><p data-ed contenteditable="false">Maalin kasta hawshaada joogso</p></div>
     <div class="card">
-      <div class="card-head"><div class="card-title" data-ed contenteditable="false">📋 Hawlaha Maanta</div><div class="card-sub" id="task-cnt">0/0 dhamme</div></div>
-      <div id="task-list" class="step-timeline"></div>
+      <div class="card-head"><div class="card-title" data-ed contenteditable="false">🗓️ Hawlaha Maanta</div><div class="card-sub" id="task-cnt">0/0 la dhammeeyay</div></div>
+      <div id="task-list" class="hawl-list"></div>
       <div class="row-inp">
         <input class="inp" id="new-task" placeholder="+ Hawl cusub..." onkeydown="if(event.key==='Enter')addTask()">
         <button class="btn-add" onclick="addTask()">Ku dar</button>
@@ -3133,7 +3131,6 @@ body.editing #settings-edit-mode{display:block !important}
       <button class="btn-sm" id="rep-t2" onclick="showRepTab('week',this)" style="flex:1;justify-content:center;min-width:90px">📆 Isbuucle</button>
       <button class="btn-sm" id="rep-t3" onclick="showRepTab('month',this)" style="flex:1;justify-content:center;min-width:90px">🗓️ Bile</button>
       <button class="btn-sm" id="rep-t4" onclick="showRepTab('charts',this)" style="flex:1;justify-content:center;min-width:90px">📊 Falanqaynta</button>
-      <button class="btn-sm" id="rep-t5" onclick="showRepTab('heatmap',this)" style="flex:1;justify-content:center;min-width:90px">🔥 Heatmap</button>
     </div>
 
     <!-- ── TAB: MAALINLE ── -->
@@ -3469,48 +3466,6 @@ body.editing #settings-edit-mode{display:block !important}
           </div>
         </div>
 
-      </div>
-    </div>
-
-    <!-- ── TAB: HEATMAP ── -->
-    <div id="rep-heatmap" style="display:none">
-      <div class="card">
-        <div class="card-head">
-          <div class="card-title">🔥 Heatmap-ka Joogteynta (12 Isbuuc)</div>
-          <select class="inp" id="hm-metric" style="width:auto;padding:6px 10px" onchange="renderHeatmap()">
-            <option value="overall">Guud ahaan</option>
-            <option value="salahPct">🕌 Salaad</option>
-            <option value="sunnahPct">📿 Sunnah</option>
-            <option value="habitsPct">💪 Caadooyin</option>
-            <option value="nadaafadPct">🧼 Nadaafad</option>
-          </select>
-        </div>
-        <div class="hm2-wrap" style="padding:10px 8px">
-          <div class="hm-grid84" id="hm-grid84"></div>
-        </div>
-        <div class="hm-legend84" style="margin-top:10px">
-          <span><span class="dot done"></span> La dhammaystay</span>
-          <span><span class="dot partial"></span> Qeyb ahaan</span>
-          <span><span class="dot none"></span> Lama samayn</span>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px">
-          <div style="text-align:center;padding:10px;background:#EDE9FE;border-radius:var(--r2)"><div style="font-size:18px;font-weight:800;color:#7C3AED" id="hm-avg">0%</div><div style="font-size:9.5px;color:var(--text3)">Celceliska</div></div>
-          <div style="text-align:center;padding:10px;background:#F3E8FF;border-radius:var(--r2)"><div style="font-size:18px;font-weight:800;color:#A21CAF" id="hm-best">0%</div><div style="font-size:9.5px;color:var(--text3)">Ugu fiican</div></div>
-          <div style="text-align:center;padding:10px;background:#E0E7FF;border-radius:var(--r2)"><div style="font-size:18px;font-weight:800;color:#4338CA" id="hm-days">0</div><div style="font-size:9.5px;color:var(--text3)">Maalmo la diiwaan geliyay</div></div>
-        </div>
-      </div>
-      <div class="card" style="display:none">
-        <div class="card-head">
-          <div class="card-title">🎯 Activity Rings — celceliska 84 maalmood</div>
-        </div>
-        <div id="hm-rings" style="display:flex;justify-content:center;padding:6px 0 4px"></div>
-      </div>
-      <div class="card" style="margin-top:16px">
-        <div class="card-head">
-          <div class="card-title">📈 Isbeddelka Isbuucyada (12 Isbuuc)</div>
-        </div>
-        <div id="hm-trend-chart"></div>
-        <div id="hm-trend-legend" style="margin-top:8px;text-align:center"></div>
       </div>
     </div>
   </div>
@@ -4263,19 +4218,19 @@ body.editing #settings-edit-mode{display:block !important}
       <div class="skx-grid" id="skill-grid"><!-- rendered by JS --></div>
 
       <div class="card" style="margin-bottom:16px">
-        <div class="card-head"><div class="card-title" data-ed contenteditable="false">🗓️ Jadwalka Usbuuca</div><button class="btn-sm" id="skx-reset-btn" style="color:var(--red)" onclick="skxResetSchedule()">↺ Dib u deji</button></div>
+        <div class="card-head" style="flex-wrap:wrap;gap:8px"><div class="card-title" data-ed contenteditable="false">🗓️ Jadwalka Usbuuca</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn-sm" onclick="openManageSkills()">⚙️ Maamul Xirfadaha</button>
+            <button class="btn-sm" id="skx-reset-btn" style="color:var(--red)" onclick="skxResetSchedule()">↺ Dib u deji</button>
+          </div>
+        </div>
         <div id="skx-schedule"></div>
       </div>
 
       <div class="card">
-        <div class="card-head"><div class="card-title" data-ed contenteditable="false">📝 Wax-barasho Cusub Diiwaangeli</div></div>
+        <div class="card-head"><div class="card-title" id="learn-card-title" data-ed contenteditable="false">📝 Wax-barasho Cusub Diiwaangeli</div></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-          <select class="sel" id="learn-skill" style="flex:none;width:100%">
-            <option>💹 Forex</option>
-            <option>📊 Data Analysis</option>
-            <option>📋 Excel</option>
-            <option>💻 Computer Learning</option>
-          </select>
+          <select class="sel" id="learn-skill" style="flex:none;width:100%"></select>
           <input class="inp" id="learn-topic" placeholder="Mowduuca (sida: Dialling S)...">
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
@@ -4591,6 +4546,7 @@ body.editing #settings-edit-mode{display:block !important}
     <div class="ph" style="background:linear-gradient(130deg,#065F46 0%,#059669 50%,#0D7377 100%)">
       <div class="em">🤲</div><h1>Cibaadooyinka</h1><p>Salaadaha, Quraanka, Sunnooyinka, Adkaarada</p>
     </div>
+    <div class="pg-maamul-chip" onclick="openManageSalahReminders()"><span class="pg-maamul-ic">⏰</span> Maamul Xasuusinta Salaadaha</div>
 
     <!-- Date nav (Salaadaha, Sunnaha, Adkaarada, Soonka) -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
@@ -5415,9 +5371,8 @@ body.editing #settings-edit-mode{display:block !important}
     <!-- Settings Tabs -->
     <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
       <button class="btn-sm active" id="set-t1" onclick="showSetTab('data',this)" style="flex:1;justify-content:center">🗄️ Xogta</button>
-      <button class="btn-sm" id="set-t2" onclick="showSetTab('notifications',this)" style="flex:1;justify-content:center">🔔 Ogeysiisyada</button>
-      <button class="btn-sm" id="set-t3" onclick="showSetTab('system',this)" style="flex:1;justify-content:center">⚙️ Nidaamka</button>
       <button class="btn-sm" id="set-t4" onclick="showSetTab('recycle',this)" style="flex:1;justify-content:center">🗑️ Recycle Bin</button>
+      <button class="btn-sm" id="set-t3" onclick="showSetTab('system',this)" style="flex:1;justify-content:center">⚙️ Nidaamka</button>
     </div>
 
     <!-- ── TAB: XOGTA (Data Management) ── -->
@@ -5485,10 +5440,6 @@ body.editing #settings-edit-mode{display:block !important}
         </div>
       </div>
 
-    </div>
-
-    <!-- ── TAB: OGEYSIISYADA (Notifications) ── -->
-    <div id="set-notifications" style="display:none">
       <!-- Notifications — FUNCTIONAL SYSTEM -->
       <div class="card" id="notif-settings-card" style="margin-bottom:14px">
         <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">🔔 Farriimaha (Notifications) — Dhab ah</div>
@@ -5553,22 +5504,14 @@ body.editing #settings-edit-mode{display:block !important}
           </div>
           <div style="font-size:10px;color:var(--text3);margin-top:6px">Hadda: <span id="current-sound">—</span></div>
           <div style="margin-top:12px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
               <span style="font-size:11.5px;color:var(--text2)">⏱️ Muddada dhawaaqa</span>
-              <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
-                <input type="number" id="sound-duration-input" min="5" max="120" step="1" value="60" inputmode="numeric" pattern="[0-9]*"
-                  oninput="notifSoundDurFromInput(this.value)"
-                  onchange="notifSoundDurCommit(this.value)"
-                  onblur="notifSoundDurCommit(this.value)"
-                  onkeydown="if(event.key==='Enter')this.blur()"
-                  style="width:54px;text-align:center;font-size:12.5px;font-weight:700;color:var(--text);border:1px solid var(--border-l);border-radius:7px;padding:5px 2px;background:var(--card)">
-                <span style="font-size:11px;color:var(--text3)">ilbiriqsi</span>
-              </div>
+              <span style="font-size:11.5px;font-weight:700;color:var(--text)" id="sound-duration-label">60 ilbiriqsi</span>
             </div>
             <input type="range" id="sound-duration-slider" min="5" max="120" step="5" value="60"
-              oninput="notifSoundDurFromSlider(this.value)"
+              oninput="document.getElementById('sound-duration-label').textContent=this.value+' ilbiriqsi'"
               onchange="setNotifSoundDuration(this.value)" style="width:100%;cursor:pointer">
-            <div style="font-size:10px;color:var(--text3);margin-top:3px">Immisa ilbiriqsi dhawaaqu/gariirku sii soconayo marka farriin timaado (5–120s) — isticmaal slider-ka ama ku qor tiro gacanta</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:3px">Immisa ilbiriqsi dhawaaqu/gariirku sii soconayo marka farriin timaado (5–120s)</div>
           </div>
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:10px">
             <input type="checkbox" id="vibrate-enabled" checked onchange="toggleVibration(this.checked)" style="width:18px;height:18px;cursor:pointer">
@@ -5661,10 +5604,7 @@ body.editing #settings-edit-mode{display:block !important}
         <div style="font-size:11px;color:var(--text2);margin-bottom:12px">Dhammaan farriimihii kuu yimid — Maanta, Shalay, iyo waayahii hore</div>
         <div id="nc-list"></div>
       </div>
-    </div>
 
-    <!-- ── TAB: NIDAAMKA (System) continued ── -->
-    <div id="set-system-2" style="display:none">
       <!-- App Info -->
       <div class="card" style="margin-bottom:14px">
         <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">ℹ️ App Macluumaadka</div>
@@ -6040,10 +5980,10 @@ async function cvLoad(){
 // maareeyaa gaar ahaan (id=auth.uid(), hoos ka eeg pushDirtyDomains() - qaybta profileDirty).
 // ═══════════════════════════════════════════════════════════
 const CLOUD_DOMAIN_MAP = {
-  daily_records: ['jadwal_bilaha','master_sched','ma_tasks','canon_tasks','skill_schedule','daily_stats','daily_archive','daily_prompts','today_goal','rep_day_note','rep_week_note','rep_month_plan','rep_note','weekly','monthly','week_ratings','history_log'],
-  worship: ['salah','salah_streak','sal_points','sal_state','sunnah','sunnah_done','cib_sal','cib_soon','cib_duxa','cib_qlog','cib_adkaar','soon_days','soon_fajr','soon_maghrib','soon_sunnah','soon_sunnah_notes','jim_check','jim_log','fasting','dhm_done','dhm_streak','jalaad'],
+  daily_records: ['jadwal_bilaha','master_sched','ma_tasks','canon_tasks','skill_schedule','skills_def','daily_stats','daily_archive','daily_prompts','today_goal','rep_day_note','rep_week_note','rep_month_plan','rep_note','weekly','monthly','week_ratings','history_log'],
+  worship: ['salah','salah_streak','sal_points','sal_state','sal_reminder_settings','sunnah','sunnah_done','cib_sal','cib_soon','cib_duxa','cib_qlog','cib_adkaar','soon_days','soon_fajr','soon_maghrib','soon_sunnah','soon_sunnah_notes','jim_check','jim_log','fasting','dhm_done','dhm_streak','jalaad'],
   quran_progress: ['quran','quran_xifdi','ch30_done'],
-  habits: ['habits','habits_good','habit_today'],
+  habits: ['habits','habits_good','habit_today','habits_def_good','habits_def_bad'],
   goals: ['yool_goals','vision_board','vision_board_month','vision_board_year','keyd_goal','keyd_log'],
   health: ['health','weight_log','food_log','pomo_by_date','pomo_history','pomo_total','nad','nad_log','nad_history'],
   education: ['learning','gpa','wb_check','wb_course_progress','wb_lesson_scores','wb_luqo_last','wb_luqo_streak','wb_manual_exams','wc_classes','wc_program_name','wc_review_log','wc_state','wn_alarm_on','wn_alarm_time','wn_nights','wn_state','wn_subject','courses','books','hn_dh2_log','hn_dhama_log','hn_pods','hn_shaqo_notes','hn_xikmad_custom','sun_check'],
@@ -7465,9 +7405,129 @@ function restoreSunnahToday(){
 restoreSunnahToday();
 
 /* ═══════════════════════════════════
-   HABITS
+   HABITS — D.habits_def_good/D.habits_def_bad waa xog user-ku ka maamuli
+   karo (⚙ Maamul Caadooyinka) — ma aha 5+5 hard-coded ah. D.habits/
+   D.habits_good (xaaladda done/undone maalin kasta) waxba lagama taaban.
 ═══════════════════════════════════ */
 if(!D.habits) D.habits={};
+if(!D.habits_def_good) D.habits_def_good=[
+  {id:'hg1', name:"Qur'aan Akhri",              icon:'📖', color:'#16A34A', active:true},
+  {id:'hg2', name:'Jimicsi',                    icon:'🏃', color:'#0EA5E9', active:true},
+  {id:'hg3', name:'Run Sheeg',                  icon:'🤝', color:'#8B5CF6', active:true},
+  {id:'hg4', name:'Waqtiga Si Fiican U Isticmaal', icon:'⏰', color:'#F59E0B', active:true},
+  {id:'hg5', name:'Salaadaha Waqtiga',          icon:'🕌', color:'#0D9488', active:true},
+];
+if(!D.habits_def_bad) D.habits_def_bad=[
+  {id:'hb1', name:'Telefoonka Xad-dhaaf',   icon:'📱', color:'#DC2626', active:true},
+  {id:'hb2', name:'Wakhti Lumin',           icon:'⏳', color:'#EA580C', active:true},
+  {id:'hb3', name:'Been Sheeg',             icon:'🚫', color:'#B91C1C', active:true},
+  {id:'hb4', name:'Cunto Xun',              icon:'🍔', color:'#C026D3', active:true},
+  {id:'hb5', name:'Salaad Dib U Dhigid',    icon:'😴', color:'#7C2D12', active:true},
+];
+function habActiveDefs(type){ return (type==='good'?D.habits_def_good:D.habits_def_bad).filter(h=>h.active!==false); }
+function habAllDefs(type){ return type==='good'?D.habits_def_good:D.habits_def_bad; }
+function habAddDef(){
+  const nameInp=document.getElementById('hab-new-name'), iconInp=document.getElementById('hab-new-icon');
+  const colorInp=document.getElementById('hab-new-color'), typeInp=document.getElementById('hab-new-type');
+  const name=(nameInp&&nameInp.value||'').trim();
+  if(!name){ alert('Fadlan geli magaca caadada!'); return; }
+  const icon=(iconInp&&iconInp.value||'⭐').trim()||'⭐';
+  const color=(colorInp&&colorInp.value)||'#64748B';
+  const type=(typeInp&&typeInp.value)||'good';
+  const list=type==='good'?D.habits_def_good:D.habits_def_bad;
+  list.push({id:'h_'+Date.now(), name, icon, color, active:true});
+  S(); renderHabitsList(); refreshManageHabitsModal();
+}
+function habUpdateDef(type, id, field, value){
+  const list=type==='good'?D.habits_def_good:D.habits_def_bad;
+  const h=list.find(x=>x.id===id); if(!h) return;
+  h[field]=value; S(); renderHabitsList();
+}
+function habDeleteDef(type, id){
+  const list=type==='good'?D.habits_def_good:D.habits_def_bad;
+  const h=list.find(x=>x.id===id); if(!h) return;
+  if(!confirm(`"${h.name}" ka saar liiska firfircoon? (Taariikhda hore ee la diiwaan geliyay lama tirtiro, waana la soo celin karaa)`)) return;
+  h.active=false; S(); renderHabitsList(); refreshManageHabitsModal();
+}
+function habRestoreDef(type, id){
+  const list=type==='good'?D.habits_def_good:D.habits_def_bad;
+  const h=list.find(x=>x.id===id); if(!h) return;
+  h.active=true; S(); renderHabitsList(); refreshManageHabitsModal();
+}
+function manageHabitsBodyHtml(){
+  const section=(type,label)=>{
+    const active=habActiveDefs(type), inactive=habAllDefs(type).filter(h=>h.active===false);
+    const row=h=>`<div class="card" style="margin-bottom:10px;padding:12px;background:var(--bg)">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+        <span style="width:18px;height:18px;border-radius:5px;background:${h.color};flex:0 0 18px;border:1px solid var(--border)"></span>
+        <input class="inp" style="flex:1" value="${wbEsc(h.name)}" oninput="habUpdateDef('${type}','${h.id}','name',this.value)">
+        <button class="btn-sm" style="padding:4px 8px;color:var(--red)" onclick="habDeleteDef('${type}','${h.id}')">🗑️</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <input class="inp" placeholder="Emoji" maxlength="4" value="${wbEsc(h.icon)}" oninput="habUpdateDef('${type}','${h.id}','icon',this.value)">
+        <input class="inp" type="color" value="${h.color}" style="padding:2px;height:34px" oninput="habUpdateDef('${type}','${h.id}','color',this.value)">
+      </div>
+    </div>`;
+    const inactiveRow=h=>`<div class="card" style="margin-bottom:10px;padding:10px 12px;background:var(--bg);opacity:.65;display:flex;align-items:center;gap:8px">
+      <span style="flex:1;font-size:12.5px">${h.icon} ${wbEsc(h.name)}</span>
+      <button class="btn-sm" onclick="habRestoreDef('${type}','${h.id}')">↺ Soo celi</button>
+    </div>`;
+    return `<div style="font-size:13px;font-weight:800;margin-bottom:8px">${label}</div>
+      ${active.length ? active.map(row).join('') : '<div class="empty">Liiska waa madhan</div>'}
+      ${inactive.length ? inactive.map(inactiveRow).join('') : ''}`;
+  };
+  return `
+    ${section('good','🟢 Caadooyinka Wanaagsan')}
+    ${section('bad','🔴 Caadooyinka Xun (laga fogaanayo)')}
+    <div class="card" style="border:2px dashed var(--border);background:var(--bg);margin-bottom:20px">
+      <div class="card-head"><div class="card-title" style="font-size:12.5px">➕ Caado cusub ku dar</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <input class="inp" id="hab-new-name" placeholder="Magaca">
+        <select class="sel" id="hab-new-type"><option value="good">🟢 Wanaagsan</option><option value="bad">🔴 Xun</option></select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <input class="inp" id="hab-new-icon" placeholder="Emoji (⭐)" maxlength="4">
+        <input class="inp" type="color" id="hab-new-color" value="#64748B" style="padding:2px;height:34px">
+      </div>
+      <button class="btn-p" style="margin-top:0" onclick="habAddDef()">➕ Ku dar</button>
+    </div>
+    <button class="btn-g" style="width:100%;justify-content:center" onclick="closeGenModal()">✕ Xidh</button>
+  `;
+}
+function refreshManageHabitsModal(){
+  const ov=document.getElementById('gen-modal-overlay'); const t=document.getElementById('gen-modal-title');
+  if(ov && ov.style.display==='flex' && t && t.textContent.includes('Caadooyinka')){
+    document.getElementById('gen-modal-body').innerHTML=manageHabitsBodyHtml();
+  }
+}
+function openManageHabits(){ openGenModal('⚙️ Maamul Caadooyinka', manageHabitsBodyHtml()); }
+function renderHabitsList(){
+  const el=document.getElementById('hab-pair-list'); if(!el) return;
+  const good=habActiveDefs('good'), bad=habActiveDefs('bad');
+  const rows=Math.max(good.length, bad.length);
+  let html='';
+  for(let i=0;i<rows;i++){
+    const g=good[i], b=bad[i];
+    const num=String(i+1).padStart(2,'0');
+    html+=`<div class="pair-row">
+      ${g ? `<div class="hc hc-ribbon hab-good" style="--rc:${g.color}" onclick="toggleHabG(this)">
+        <div class="rc-num">${num}</div>
+        <div class="hc-em">${g.icon}</div>
+        <div class="hc-i"><div class="hc-n">${wbEsc(g.name)}</div></div>
+        <div class="hc-tog"></div>
+      </div>` : '<div></div>'}
+      <div class="pair-mid">→</div>
+      ${b ? `<div class="hc hc-ribbon hab-bad rev" style="--rc:${b.color}" onclick="toggleHab(this)">
+        <div class="hc-tog"></div>
+        <div class="hc-i"><div class="hc-n">${wbEsc(b.name)}</div></div>
+        <div class="hc-em">${b.icon}</div>
+        <div class="rc-num">${num}</div>
+      </div>` : '<div></div>'}
+    </div>`;
+  }
+  el.innerHTML = html || '<div class="empty">Caado ma jirto — ku dar "⚙ Maamul Caadooyinka"</div>';
+}
+renderHabitsList();
 let HAB_VIEW_DATE = TODAY;
 function habChangeDay(delta){
   const d=new Date(HAB_VIEW_DATE); d.setDate(d.getDate()+delta);
@@ -7491,9 +7551,11 @@ function habRenderForDate(){
 function updateHabTotal(){
   const doneG=document.querySelectorAll('.hab-good.done').length;
   const doneB=document.querySelectorAll('.hab-bad.done').length;
-  const total=doneG+doneB, pct=Math.round(total/10*100);
+  const totalMax=habActiveDefs('good').length+habActiveDefs('bad').length;
+  const total=doneG+doneB, pct=totalMax>0?Math.round(total/totalMax*100):0;
   const tn=document.getElementById('hab-total-n'); if(tn) tn.textContent=total;
   const tp=document.getElementById('hab-total-pct'); if(tp) tp.textContent=pct+'%';
+  const tmax=document.getElementById('hab-total-max'); if(tmax) tmax.textContent=totalMax;
 }
 function toggleHab(c){
   const name=(c.querySelector('.hc-n')?.textContent||'').trim();
@@ -7501,10 +7563,11 @@ function toggleHab(c){
   c.classList.toggle('done');
   const isDone=c.classList.contains('done');
   c.querySelector('.hc-tog').textContent=isDone?'✓':'';
-  const done=document.querySelectorAll('.hab-bad.done').length, pct=Math.round(done/5*100);
+  const badMax=habActiveDefs('bad').length;
+  const done=document.querySelectorAll('.hab-bad.done').length, pct=badMax>0?Math.round(done/badMax*100):0;
   document.getElementById('hab-pb').style.width=pct+'%';
   document.getElementById('hab-pct').textContent=pct+'%';
-  document.getElementById('hab-badge').textContent=`${done}/5`;
+  document.getElementById('hab-badge').textContent=`${done}/${badMax}`;
   if(!D.habits[HAB_VIEW_DATE]) D.habits[HAB_VIEW_DATE]={};
   D.habits[HAB_VIEW_DATE][key]=isDone; S();
   if(HAB_VIEW_DATE===TODAY){
@@ -7518,10 +7581,11 @@ function toggleHab(c){
   updateHabTotal();
 }
 function resetHab(){
+  if(!confirm('Ma dib u deji xaaladda caadooyinka xun ee maalintan?')) return;
   document.querySelectorAll('.hab-bad').forEach(c=>{c.classList.remove('done');c.querySelector('.hc-tog').textContent='';});
   document.getElementById('hab-pb').style.width='0%';
   document.getElementById('hab-pct').textContent='0%';
-  document.getElementById('hab-badge').textContent='0/5';
+  document.getElementById('hab-badge').textContent=`0/${habActiveDefs('bad').length}`;
   D.habits[HAB_VIEW_DATE]={}; S();
   updateHabTotal();
 }
@@ -7538,10 +7602,11 @@ function restoreHabitsToday(){
       }
     });
   }
-  const done=document.querySelectorAll('.hab-bad.done').length, pct=Math.round(done/5*100);
+  const badMax=habActiveDefs('bad').length;
+  const done=document.querySelectorAll('.hab-bad.done').length, pct=badMax>0?Math.round(done/badMax*100):0;
   const pb=document.getElementById('hab-pb'); if(pb) pb.style.width=pct+'%';
   const pt=document.getElementById('hab-pct'); if(pt) pt.textContent=pct+'%';
-  const bd=document.getElementById('hab-badge'); if(bd) bd.textContent=`${done}/5`;
+  const bd=document.getElementById('hab-badge'); if(bd) bd.textContent=`${done}/${badMax}`;
 }
 restoreHabitsToday();
 
@@ -7553,10 +7618,11 @@ function toggleHabG(c){
   c.classList.toggle('done');
   const isDone=c.classList.contains('done');
   c.querySelector('.hc-tog').textContent=isDone?'✓':'';
-  const done=document.querySelectorAll('.hab-good.done').length, pct=Math.round(done/5*100);
+  const goodMax=habActiveDefs('good').length;
+  const done=document.querySelectorAll('.hab-good.done').length, pct=goodMax>0?Math.round(done/goodMax*100):0;
   document.getElementById('habg-pb').style.width=pct+'%';
   document.getElementById('habg-pct').textContent=pct+'%';
-  document.getElementById('habg-badge').textContent=`${done}/5`;
+  document.getElementById('habg-badge').textContent=`${done}/${goodMax}`;
   if(!D.habits_good[HAB_VIEW_DATE]) D.habits_good[HAB_VIEW_DATE]={};
   D.habits_good[HAB_VIEW_DATE][key]=isDone; S();
   if(HAB_VIEW_DATE===TODAY && typeof addDiiwaanEntry==='function'){
@@ -7567,10 +7633,11 @@ function toggleHabG(c){
   updateHabTotal();
 }
 function resetHabG(){
+  if(!confirm('Ma dib u deji xaaladda caadooyinka wanaagsan ee maalintan?')) return;
   document.querySelectorAll('.hab-good').forEach(c=>{c.classList.remove('done');c.querySelector('.hc-tog').textContent='';});
   document.getElementById('habg-pb').style.width='0%';
   document.getElementById('habg-pct').textContent='0%';
-  document.getElementById('habg-badge').textContent='0/5';
+  document.getElementById('habg-badge').textContent=`0/${habActiveDefs('good').length}`;
   D.habits_good[HAB_VIEW_DATE]={}; S();
   updateHabTotal();
 }
@@ -7587,10 +7654,11 @@ function restoreHabitsGoodToday(){
       }
     });
   }
-  const done=document.querySelectorAll('.hab-good.done').length, pct=Math.round(done/5*100);
+  const goodMax=habActiveDefs('good').length;
+  const done=document.querySelectorAll('.hab-good.done').length, pct=goodMax>0?Math.round(done/goodMax*100):0;
   const pb=document.getElementById('habg-pb'); if(pb) pb.style.width=pct+'%';
   const pt=document.getElementById('habg-pct'); if(pt) pt.textContent=pct+'%';
-  const bd=document.getElementById('habg-badge'); if(bd) bd.textContent=`${done}/5`;
+  const bd=document.getElementById('habg-badge'); if(bd) bd.textContent=`${done}/${goodMax}`;
 }
 restoreHabitsGoodToday();
 updateHabTotal();
@@ -7666,17 +7734,20 @@ const STEP_COLORS=[
   {bg:'linear-gradient(145deg,#60A5FA,#2563EB)'},
   {bg:'linear-gradient(145deg,#F87171,#DC2626)'}
 ];
+const HAWL_COLORS=['#16A34A','#2563EB','#D97706','#DC2626','#7C3AED','#0D9488','#DB2777','#1E3A8A'];
+function taskLabel(t){ return (t&&(t.title||t.text))||''; }
+const HAWL_DEFAULT_TASKS=[
+  {time:'05:30', icon:'🌅', title:'Kac oo Diyaar Garow',   desc:"Kac 5:30 AM, samee salaadda subax, dhaq, oo diyaari maalintaada."},
+  {time:'07:00', icon:'📖', title:'Akhris & Horumar',       desc:"Aqri buug ama maqaal faa'iido leh (1–2 saac)."},
+  {time:'09:00', icon:'🏃', title:'Jimicsi iyo Caafimaad',  desc:'Jimicsi samee 30–45 daqiiqo, cab biyo, cun cunto caafimaad leh.'},
+  {time:'12:00', icon:'🍽️', title:'Qado iyo Nasasho',       desc:'Cun qado caafimaad leh, naso 30 daqiiqo.'},
+  {time:'15:00', icon:'🧘', title:'Is xisaabi malintaada',  desc:'Falanqee waxa aad qabtay, waxa ka dhiman, oo qorshee maalinta xigta.'},
+  {time:'18:00', icon:'🕌', title:'Cibaadada La Soco',      desc:'Salaadaha iyo cibaadadaada ilaali.'},
+  {time:'20:00', icon:'💻', title:'Xirfad Baro',            desc:'Baro xirfad cusub (1–2 saac).'},
+  {time:'22:00', icon:'🌙', title:'Diyaar Garow Berri',     desc:'Qorshee maalinta xigta, diyaari waxyaabaha muhiimka ah, oo hurdo.'},
+];
 if(!D.tasks.length && !D._tasks_seeded){
-  D.tasks=[
-    {text:'🌅 5:30 AM — Cibaado Subax: Soo toos oo bilaab maalinta Ilaahay', done:false, status:'sugaya', date:TODAY},
-    {text:'🏃 6:15 AM — Jimicsi Subax Dhexe: Dhaqdhaqaaq jireed oo fudud',    done:false, status:'sugaya', date:TODAY},
-    {text:'📝 8:00 AM — Diiwaan Gelinka Dhexe: Qor mahadnaq',                done:false, status:'sugaya', date:TODAY},
-    {text:'📖 10:00 AM — Akhris Quraan Sare: Quraan akhri',                  done:false, status:'sugaya', date:TODAY},
-    {text:'💰 12:00 PM — Kormeer Dhaqaale Dhexe: Eeg kharashka',             done:false, status:'sugaya', date:TODAY},
-    {text:'✅ 2:00 PM — Hawlaha Shaqada Sare: Dhammee 2 hawl',               done:false, status:'sugaya', date:TODAY},
-    {text:'📚 4:00 PM — Caado Cusub Dhexe: Barasho ama akhrin',              done:false, status:'sugaya', date:TODAY},
-    {text:'🌙 8:00 PM — Fiidnimo Sare: Dib u eegis & duco',                  done:false, status:'sugaya', date:TODAY},
-  ];
+  D.tasks=HAWL_DEFAULT_TASKS.map(d=>({text:d.title, title:d.title, desc:d.desc, time:d.time, icon:d.icon, done:false, status:'sugaya', date:TODAY}));
   D._tasks_seeded=true; S();
 }
 /* ONE-TIME: ku beddel liiskii hore ee "Hawlaha Maanta" (3 hawlood) haddii
@@ -7685,19 +7756,35 @@ if(!D._tasks_migrated_v2){
   const oldDefault=['Eraadka subaxnimada akhriso','Xiriirada barnaamijka','Kulan saacad 3-da'];
   const isUntouched = D.tasks.length===3 && D.tasks.every(t=>oldDefault.includes(t.text));
   if(isUntouched){
-    D.tasks=[
-      {text:'🌅 5:30 AM — Cibaado Subax: Soo toos oo bilaab maalinta Ilaahay', done:false, status:'sugaya', date:TODAY},
-      {text:'🏃 6:15 AM — Jimicsi Subax Dhexe: Dhaqdhaqaaq jireed oo fudud',    done:false, status:'sugaya', date:TODAY},
-      {text:'📝 8:00 AM — Diiwaan Gelinka Dhexe: Qor mahadnaq',                done:false, status:'sugaya', date:TODAY},
-      {text:'📖 10:00 AM — Akhris Quraan Sare: Quraan akhri',                  done:false, status:'sugaya', date:TODAY},
-      {text:'💰 12:00 PM — Kormeer Dhaqaale Dhexe: Eeg kharashka',             done:false, status:'sugaya', date:TODAY},
-      {text:'✅ 2:00 PM — Hawlaha Shaqada Sare: Dhammee 2 hawl',               done:false, status:'sugaya', date:TODAY},
-      {text:'📚 4:00 PM — Caado Cusub Dhexe: Barasho ama akhrin',              done:false, status:'sugaya', date:TODAY},
-      {text:'🌙 8:00 PM — Fiidnimo Sare: Dib u eegis & duco',                  done:false, status:'sugaya', date:TODAY},
-    ];
+    D.tasks=HAWL_DEFAULT_TASKS.map(d=>({text:d.title, title:d.title, desc:d.desc, time:d.time, icon:d.icon, done:false, status:'sugaya', date:TODAY}));
     S();
   }
   D._tasks_migrated_v2=true; S();
+}
+/* ONE-TIME v3: haddii D.tasks weli yahay liiskii hore ee v2 (8 hawlood, hal-
+   xariiq qoraal ah oo leh emoji+waqti ku dhex jira), u beddel qaab cusub oo
+   leh time/icon/title/desc oo kala go'an (naqshadda cusub — fiiri renderTasks).
+   Haddii isticmaaluhu horeba beddelay/ku daray hawlo gaar ah, lama taaban. */
+if(!D._tasks_migrated_v3){
+  const oldV2Texts=[
+    '🌅 5:30 AM — Cibaado Subax: Soo toos oo bilaab maalinta Ilaahay',
+    '🏃 6:15 AM — Jimicsi Subax Dhexe: Dhaqdhaqaaq jireed oo fudud',
+    '📝 8:00 AM — Diiwaan Gelinka Dhexe: Qor mahadnaq',
+    '📖 10:00 AM — Akhris Quraan Sare: Quraan akhri',
+    '💰 12:00 PM — Kormeer Dhaqaale Dhexe: Eeg kharashka',
+    '✅ 2:00 PM — Hawlaha Shaqada Sare: Dhammee 2 hawl',
+    '📚 4:00 PM — Caado Cusub Dhexe: Barasho ama akhrin',
+    '🌙 8:00 PM — Fiidnimo Sare: Dib u eegis & duco'
+  ];
+  const isV2Untouched = D.tasks.length===8 && D.tasks.every(t=>oldV2Texts.includes(t.text) && !t.title);
+  if(isV2Untouched){
+    D.tasks=D.tasks.map((t,i)=>{
+      const d=HAWL_DEFAULT_TASKS[i]||HAWL_DEFAULT_TASKS[0];
+      return {...t, text:d.title, title:d.title, desc:d.desc, time:d.time, icon:d.icon};
+    });
+    S();
+  }
+  D._tasks_migrated_v3=true; S();
 }
 /* ═══════════════════════════════════
    DIIWAANKA — Day-rollover task archive.
@@ -7720,10 +7807,10 @@ function toggleTask(idx){
   t.done=!t.done; t.status=t.done?'dhameeyay':'sugaya'; S(); renderTasks();
   if(typeof addDiiwaanEntry==='function'){
     const key='t'+idx;
-    if(t.done) addDiiwaanEntry('task', key, `${t.text} dhammaystay`);
+    if(t.done) addDiiwaanEntry('task', key, `${taskLabel(t)} dhammaystay`);
     else removeDiiwaanEntry('task', key);
   }
-  if(t.done && typeof notificationSystem!=='undefined') notificationSystem.fire('✅ Hawl Dhammaystay', `"${t.text}" waa la dhammeeyay!`, 'taskdone_'+idx+'_'+TODAY, {category:'taskCompletion', priority:'low'});
+  if(t.done && typeof notificationSystem!=='undefined') notificationSystem.fire('✅ Hawl Dhammaystay', `"${taskLabel(t)}" waa la dhammeeyay!`, 'taskdone_'+idx+'_'+TODAY, {category:'taskCompletion', priority:'low'});
   if(typeof renderDiiwaankaTab==='function') renderDiiwaankaTab();
 }
 function cycleTaskStatus(idx, ev){
@@ -7735,10 +7822,10 @@ function cycleTaskStatus(idx, ev){
   t.status=next; t.done=(next==='dhameeyay'); S(); renderTasks();
   if(typeof addDiiwaanEntry==='function'){
     const key='t'+idx;
-    if(t.done) addDiiwaanEntry('task', key, `${t.text} dhammaystay`);
+    if(t.done) addDiiwaanEntry('task', key, `${taskLabel(t)} dhammaystay`);
     else removeDiiwaanEntry('task', key);
   }
-  if(t.done && typeof notificationSystem!=='undefined') notificationSystem.fire('✅ Hawl Dhammaystay', `"${t.text}" waa la dhammeeyay!`, 'taskdone_'+idx+'_'+TODAY, {category:'taskCompletion', priority:'low'});
+  if(t.done && typeof notificationSystem!=='undefined') notificationSystem.fire('✅ Hawl Dhammaystay', `"${taskLabel(t)}" waa la dhammeeyay!`, 'taskdone_'+idx+'_'+TODAY, {category:'taskCompletion', priority:'low'});
   if(typeof renderDiiwaankaTab==='function') renderDiiwaankaTab();
 }
 function delTaskItem(idx, ev){
@@ -7748,34 +7835,46 @@ function delTaskItem(idx, ev){
 }
 function addTask(){
   const inp=document.getElementById('new-task'), v=inp.value.trim(); if(!v)return;
-  D.tasks.push({text:v, done:false, status:'sugaya', date:TODAY}); S();
+  D.tasks.push({text:v, title:v, desc:'', time:'', icon:'📌', done:false, status:'sugaya', date:TODAY}); S();
   inp.value=''; renderTasks();
 }
 const TASK_STATUS_META={
-  sugaya:    {cls:'bn', lbl:'⏳ Sugaya'},
+  sugaya:    {cls:'bn', lbl:'👤 Sugaya'},
   firfircoon:{cls:'bu', lbl:'🟠 Firfircoon'},
   dhameeyay: {cls:'bd', lbl:'✅ Dhameeyay'},
 };
 function renderTasks(){
   const el=document.getElementById('task-list'); if(!el)return;
   const all=D.tasks.length, done=D.tasks.filter(t=>t.done).length;
-  const cnt=document.getElementById('task-cnt'); if(cnt) cnt.textContent=`${done}/${all} dhamme`;
+  const cnt=document.getElementById('task-cnt'); if(cnt) cnt.textContent=`${done}/${all} la dhammeeyay`;
   if(!all){ el.innerHTML='<div class="empty">Hawl ma jirto</div>'; return; }
   el.innerHTML=D.tasks.map((t,i)=>{
-    const side=i%2===0?'a':'b';
-    const c=STEP_COLORS[i%STEP_COLORS.length];
+    const col=HAWL_COLORS[i%HAWL_COLORS.length];
     const st=t.status||(t.done?'dhameeyay':'sugaya');
     const meta=TASK_STATUS_META[st]||TASK_STATUS_META.sugaya;
-    return`<div class="step-row side-${side}">
-      <div class="step-num" style="background:${c.bg}">
-        <div class="step-num-n">${String(i+1).padStart(2,'0')}</div>
-        <div class="step-num-s">Hawl</div>
+    const num=String(i+1).padStart(2,'0');
+    const time=t.time||'';
+    const icon=t.icon||'📌';
+    const title=taskLabel(t);
+    const desc=t.desc||'';
+    return`<div class="hawl-row ${t.done?'done':''}" onclick="toggleTask(${i})">
+      <div class="hawl-end" style="background:${col}">
+        <div class="hawl-end-v">${time||'—'}</div>
+        <div class="hawl-end-l">Hawl.</div>
       </div>
-      <div class="step-card task ${t.done?'done':''}" onclick="toggleTask(${i})">
-        <div class="task-cb">${t.done?'✓':''}</div>
-        <div class="task-nm">${t.text}</div>
-        <span class="badge ${meta.cls}" onclick="cycleTaskStatus(${i},event)" style="cursor:pointer">${meta.lbl}</span>
-        <button class="step-del" onclick="delTaskItem(${i},event)">✕</button>
+      <div class="hawl-mid">
+        <div class="hawl-cb">${t.done?'✓':''}</div>
+        <div class="hawl-ic">${icon}</div>
+        <div class="hawl-body">
+          <div class="hawl-title">${title}</div>
+          ${desc?`<div class="hawl-desc">${desc}</div>`:''}
+        </div>
+        <span class="badge hawl-pill ${meta.cls}" onclick="cycleTaskStatus(${i},event)">${meta.lbl}</span>
+        <button class="hawl-del" onclick="delTaskItem(${i},event)">✕</button>
+      </div>
+      <div class="hawl-end" style="background:${col}">
+        <div class="hawl-end-v">${num}</div>
+        <div class="hawl-end-l">Hawl.</div>
       </div>
     </div>`;
   }).join('');
@@ -8539,8 +8638,8 @@ function renderWeekQaybahaMaanta(){
   const quranPct = Math.min(100, Math.round(quranBog/quranGoal*100));
   const nadDone = Object.values(D.nad||{}).filter(Boolean).length;
   const nadPct = Math.round(nadDone/7*100);
-  const qmTaskEls=document.querySelectorAll('#task-list .task');
-  const qmTaskDone=document.querySelectorAll('#task-list .task.done').length;
+  const qmTaskEls=document.querySelectorAll('#task-list .hawl-row');
+  const qmTaskDone=document.querySelectorAll('#task-list .hawl-row.done').length;
   const shaqoPct = qmTaskEls.length ? Math.round(qmTaskDone/qmTaskEls.length*100) : 0;
   function wkStatus(pct,color){
     if(pct<=0) return `<div style="display:inline-block;margin-top:6px;padding:2px 10px;border-radius:20px;font-size:9.5px;font-weight:700;background:var(--border-l);color:var(--text3)">⏳ Sugaya</div>`;
@@ -9829,14 +9928,13 @@ function refreshReport(){ buildReports(); }
    REPORTS – 3 TABS
 ══════════════════════════════════════════ */
 function showRepTab(tab, btn){
-  ['day','week','month','charts','heatmap'].forEach(t=>{
+  ['day','week','month','charts'].forEach(t=>{
     const el=document.getElementById('rep-'+t); if(el)el.style.display=t===tab?'block':'none';
   });
   document.querySelectorAll('#page-warbixinta .btn-sm').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
   buildReports();
   if(tab==='charts' && typeof renderReportCharts==='function') renderReportCharts();
-  if(tab==='heatmap' && typeof renderHeatmap==='function') renderHeatmap();
 }
 
 function buildReports(){
@@ -10058,8 +10156,8 @@ function snapshotToday(){
   const duxaDone = Object.values(D.cib_duxa||{}).filter(Boolean).length;
   const soonDuxaDone = Object.values(D.cib_soon||{}).filter(Boolean).length;
   const jimDone = (typeof JIM_ITEMS!=='undefined') ? JIM_ITEMS.filter(it=>D.jim_check&&D.jim_check[it.key]&&D.jim_check[it.key].done).length : 0;
-  const taskEls = document.querySelectorAll('#task-list .task');
-  const taskDone = document.querySelectorAll('#task-list .task.done').length;
+  const taskEls = document.querySelectorAll('#task-list .hawl-row');
+  const taskDone = document.querySelectorAll('#task-list .hawl-row.done').length;
   const kharashToday = (D.dq_kharash||[]).filter(k=>k.date===TODAY).reduce((a,k)=>a+(k.amount||0),0);
   const keydToday = (D.keyd_log||[]).filter(k=>k.date===TODAY).reduce((a,k)=>a+(k.amount||0),0);
   const incomeToday = (D.dq_income||[]).filter(k=>k.date===TODAY).reduce((a,k)=>a+(k.amount||0),0);
@@ -12505,14 +12603,12 @@ function renderBadgeScrollbar(){
    SETTINGS — TABS
 ══════════════════════════════════════════ */
 function showSetTab(tab, btn){
-  ['data','notifications','system','recycle'].forEach(t=>{
+  ['data','system','recycle'].forEach(t=>{
     const el=document.getElementById('set-'+t); if(el)el.style.display=t===tab?'block':'none';
   });
-  const sys2=document.getElementById('set-system-2'); if(sys2)sys2.style.display=tab==='system'?'block':'none';
   document.querySelectorAll('#page-settings .btn-sm').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
   if(tab==='data') renderSettingsData();
-  if(tab==='notifications' && typeof notificationSystem!=='undefined') notificationSystem.init();
   if(tab==='system') openSettings();
   if(tab==='recycle' && typeof renderRecycleBin==='function') renderRecycleBin();
 }
@@ -12832,7 +12928,7 @@ const notificationSystem = {
     document.getElementById('sound-btn-'+soundType)?.classList.add('active');
     const durVal = D.notif_sound_duration || 60;
     const durSlider=document.getElementById('sound-duration-slider'); if(durSlider) durSlider.value=durVal;
-    const durInput=document.getElementById('sound-duration-input'); if(durInput) durInput.value=durVal;
+    const durLabel=document.getElementById('sound-duration-label'); if(durLabel) durLabel.textContent=durVal+' ilbiriqsi';
     if('Notification' in window && Notification.permission==='granted') this.startChecks();
     this.checkAnnouncement();
   },
@@ -12993,8 +13089,7 @@ const notificationSystem = {
   setSoundDuration(seconds){
     const val = Math.max(5, Math.min(120, parseInt(seconds,10)||60));
     D.notif_sound_duration = val; S();
-    const durSlider=document.getElementById('sound-duration-slider'); if(durSlider) durSlider.value=val;
-    const durInput=document.getElementById('sound-duration-input'); if(durInput) durInput.value=val;
+    const lbl=document.getElementById('sound-duration-label'); if(lbl) lbl.textContent=val+' ilbiriqsi';
     showToast('✅ Muddada dhawaaqa: '+val+' ilbiriqsi','blue');
   },
 
@@ -13320,12 +13415,16 @@ const notificationSystem = {
     const parseT=(t)=>{ const m=t.match(/(\d+):(\d+)\s*(AM|PM)/i); if(!m) return null; let h=parseInt(m[1])%12; if(/PM/i.test(m[3])) h+=12; return {h,m:parseInt(m[2])}; };
     const nowStr=pad2(new Date().getHours())+':'+pad2(new Date().getMinutes());
     Object.keys(SAL_META).forEach(k=>{
+      const set=salReminderSetting(k);
+      if(!set.on) return;
       const t=parseT(SAL_META[k].t); if(!t) return;
       const exact=pad2(t.h)+':'+pad2(t.m);
-      const before=addMinsToHHMM(t.h,t.m,-5);
       // 🕌 Salaadaha waa priority:'high' — waxay ka gudbaan Saacadaha Aamusnaanta (sida alarm-ka Fajr)
       if(nowStr===exact) this.fire(`🕌 Waqtiga ${SAL_META[k].name}`,'Waqtiga salaadda waa galay!','salah_'+k,{category:'daily', priority:'high'});
-      else if(nowStr===before) this.fire(`⏰ ${SAL_META[k].name} — 5 daqiiqo`,'Waqtiga salaadda waa 5 daqiiqo ka dambeeya!','salah_pre_'+k,{category:'daily', priority:'high'});
+      else if(set.before>0){
+        const before=addMinsToHHMM(t.h,t.m,-set.before);
+        if(nowStr===before) this.fire(`⏰ ${SAL_META[k].name} — ${set.before} daqiiqo`,`Waqtiga salaadda waa ${set.before} daqiiqo ka dambeeya!`,'salah_pre_'+k,{category:'daily', priority:'high'});
+      }
     });
   },
 
@@ -13493,25 +13592,6 @@ function playNotificationSound(type){ notificationSystem.playSound(type); }
 function vibrateDevice(type){ notificationSystem.vibrate(type); }
 function setNotifSound(type){ notificationSystem.setSound(type); }
 function setNotifSoundDuration(seconds){ notificationSystem.setSoundDuration(seconds); }
-// ⏱️ Number-input ⇄ Slider two-way sync ee Muddada Dhawaaqa (spec: gacanta + slider labaduba)
-function notifSoundDurFromInput(v){
-  // Marka la qorayo (live) — slider-ka kaliya la jaanqaadiyo, kaydinta/clamp-ka ha lagu sameynin ilaa la dhammeeyo (onchange/blur)
-  const n = parseInt(v, 10);
-  if(!isNaN(n)){
-    const slider = document.getElementById('sound-duration-slider');
-    if(slider) slider.value = Math.max(5, Math.min(120, n));
-  }
-}
-function notifSoundDurFromSlider(v){
-  const input = document.getElementById('sound-duration-input');
-  if(input) input.value = v;
-}
-function notifSoundDurCommit(v){
-  // Marka la dhammeeyo qorista (Enter/blur/change) — clamp 5–120, tiro-kaliya, kaydi
-  let n = parseInt(v, 10);
-  if(isNaN(n)) n = D.notif_sound_duration || 60;
-  setNotifSoundDuration(n); // setSoundDuration() horeba wuu clamp gareeyaa (5–120) oo wuxuu dib u cusboonaysiinayaa input-ka + slider-ka labadaba
-}
 function toggleDND(checked){ notificationSystem.toggleDND(checked); }
 function checkReminders(){ notificationSystem.checkAll(); }
 function updateNotifStatus(){ notificationSystem.updateStatusUI(); }
@@ -14190,14 +14270,20 @@ renderHealth();
 
 /* ═══════════════════════════════════
    XIRFADAHA — hour-based skill tracking, editable weekly schedule, full analytics
+   Xirfadaha (D.skills_def) iyo jadwalka (D.skill_schedule) labaduba waa xog
+   user-ku ka maamuli karo (⚙️ Maamul Xirfadaha) — ma aha kuwo hard-coded ah.
 ═══════════════════════════════════ */
-const SKILLS_DEF=[
-  {id:'forex',name:'💹 Forex',color:'#F59E0B',weeklyTarget:10},
-  {id:'data',name:'📊 Data Analysis',color:'#3B82F6',weeklyTarget:2},
-  {id:'excel',name:'📋 Excel',color:'#22C55E',weeklyTarget:3},
-  {id:'complearn',name:'💻 Computer Learning',color:'#8B5CF6',weeklyTarget:2},
-];
-const SKX_WEEKLY_TOTAL = SKILLS_DEF.reduce((a,s)=>a+s.weeklyTarget,0);
+if(!D.skills_def){
+  D.skills_def=[
+    {id:'forex',name:'💹 Forex',color:'#F59E0B',weeklyTarget:10,active:true},
+    {id:'data',name:'📊 Data Analysis',color:'#3B82F6',weeklyTarget:2,active:true},
+    {id:'excel',name:'📋 Excel',color:'#22C55E',weeklyTarget:3,active:true},
+    {id:'complearn',name:'💻 Computer Learning',color:'#8B5CF6',weeklyTarget:2,active:true},
+  ];
+}
+function getSkillsDef(){ return (D.skills_def||[]).filter(s=>s.active!==false); }
+function getAllSkillsDef(){ return D.skills_def||[]; }
+function skxWeeklyTotal(){ return getSkillsDef().reduce((a,s)=>a+(parseFloat(s.weeklyTarget)||0),0); }
 const SKX_DAYS=WEEK_DAYS_SO; // ['Sabti','Axad','Isniin','Talaado','Arbaco','Khamiis','Jimce'] — canonical Sab→Jim week
 /* ONE-TIME: xogtii hore ee "🧾 Accounting" ku qornayd (jadwalka usbuuca iyo
    taariikhda waxbarashada) waa loo beddelayaa "💻 Computer Learning" si aanay
@@ -14211,6 +14297,26 @@ if(!D._skx_migrated_complearn){
   if(scChanged||lnChanged) S();
 }
 if(!D.skill_schedule) D.skill_schedule=skxDefaultSchedule();
+/* ONE-TIME: jadwalka default-ka ahaa (isku darsan Forex/Data/Excel/Computer
+   Learning) waa loo beddelayaa 7-da maalmood oo dhan → Forex, sida la codsaday.
+   Haddii isticmaaluhu horeba beddelay jadwalkiisa (uusan u ahayn kii asal
+   ahaa), lama taaban — xogtiisa gaarka ah waa la ilaaliyaa. */
+if(!D._skx_migrated_all_forex){
+  const oldDef=[
+    {day:'Isniin',skill:'💹 Forex',hours:2},
+    {day:'Talaado',skill:'💹 Forex',hours:2},
+    {day:'Arbaco',skill:'📊 Data Analysis',hours:2},
+    {day:'Khamiis',skill:'💹 Forex',hours:2},
+    {day:'Jimco',skill:'📋 Excel',hours:2},
+    {day:'Sabti',skill:'💹 Forex',hours:2},
+    {day:'Sabti',skill:'📋 Excel',hours:1},
+    {day:'Axad',skill:'💹 Forex',hours:2},
+    {day:'Axad',skill:'💻 Computer Learning',hours:2},
+  ];
+  const isOldUntouched = JSON.stringify(D.skill_schedule)===JSON.stringify(oldDef);
+  if(isOldUntouched){ D.skill_schedule=skxDefaultSchedule(); S(); }
+  D._skx_migrated_all_forex=true; S();
+}
 function calcSkillLevel(count){
   if(count>=50)return{lbl:'🏆 Xirfad leh',cls:'bd'};
   if(count>=20)return{lbl:'⭐ Dhexe',cls:'bn'};
@@ -14278,9 +14384,9 @@ function renderSkillGrid(){
   const el=document.getElementById('skill-grid');
   if(!el)return;
   const thisWeek=skxWeekDates(0);
-  el.innerHTML=SKILLS_DEF.map(sk=>{
+  el.innerHTML=getSkillsDef().map(sk=>{
     const hrs=Math.round(skxHoursInRange(sk.name,thisWeek)*10)/10;
-    const pct=Math.min(Math.round(hrs/sk.weeklyTarget*100),100);
+    const pct=Math.min(Math.round(hrs/(sk.weeklyTarget||1)*100),100);
     const remaining=Math.max(Math.round((sk.weeklyTarget-hrs)*10)/10,0);
     const stage=skxStage(pct);
     return `<div class="skx-card" style="--sc:${sk.color}">
@@ -14297,22 +14403,16 @@ function renderSkillGrid(){
   }).join('');
 }
 function skxDefaultSchedule(){
-  return [
-    {day:'Isniin',skill:'💹 Forex',hours:2},
-    {day:'Talaado',skill:'💹 Forex',hours:2},
-    {day:'Arbaco',skill:'📊 Data Analysis',hours:2},
-    {day:'Khamiis',skill:'💹 Forex',hours:2},
-    {day:'Jimco',skill:'📋 Excel',hours:2},
-    {day:'Sabti',skill:'💹 Forex',hours:2},
-    {day:'Sabti',skill:'📋 Excel',hours:1},
-    {day:'Axad',skill:'💹 Forex',hours:2},
-    {day:'Axad',skill:'💻 Computer Learning',hours:2},
-  ];
+  // Per user request: default-ka 7-da maalmood oo dhan waa Forex, 2h maalin
+  // kasta — MA AHA hard-coded oo aan la beddeli karin: waa qiimo bilow ah
+  // oo kaliya, D.skill_schedule ka dib waa la maamuli karaa gebi ahaanba.
+  return SKX_DAYS.map(day=>({day, skill:'💹 Forex', hours:2}));
 }
 function skxResetSchedule(){
+  if(!confirm('Jadwalka usbuuca dhammaantiis dib ma ugu celisaa qiimaha bilowga (Forex, 2h maalin kasta)?')) return;
   D.skill_schedule = skxDefaultSchedule();
   S();
-  renderSkillSchedule();
+  renderSkillSchedule(); renderSkillAnalytics();
   const btn=document.getElementById('skx-reset-btn');
   if(btn){
     const orig=btn.textContent;
@@ -14323,7 +14423,11 @@ function skxResetSchedule(){
 }
 const SKX_STEP_COLORS=['#F97316','#4338CA','#0EA5E9','#A21CAF','#16A34A','#0369A1','#DB2777'];
 /* Merges any duplicate day+skill rows (e.g. from repeated accidental taps) into a single row,
-   summing their hours, so the schedule never accumulates junk entries. */
+   summing their hours, so the schedule never accumulates junk entries.
+   MUHIIM: waxaa la isticmaalaa getAllSkillsDef() (ma aha getSkillsDef()) si
+   safka jadwalka ee tixraacaya xirfad la tirtiray (inactive) uusan u lumin —
+   xirfad la tirtiray weli waa la arki karaa jadwalka, laakiin lama dari karo
+   (fiiri dropdown-ka cusub ee kaliya xirfadaha firfircoon soo bandhiga). */
 function skxDedupeSchedule(){
   const map=new Map();
   (D.skill_schedule||[]).forEach(r=>{
@@ -14332,7 +14436,7 @@ function skxDedupeSchedule(){
   });
   const merged=[];
   SKX_DAYS.forEach(day=>{
-    SKILLS_DEF.forEach(sk=>{
+    getAllSkillsDef().forEach(sk=>{
       const key=day+'|'+sk.name;
       if(map.has(key)) merged.push({day, skill:sk.name, hours:map.get(key)});
     });
@@ -14341,36 +14445,92 @@ function skxDedupeSchedule(){
   D.skill_schedule=merged;
   if(changed) S();
 }
+function skxTodayDayName(){ return WEEK_DAYS_SO[weekDayIndex(new Date())]; }
+function skxTodaySkillNames(){
+  const today=skxTodayDayName();
+  const names=[...new Set((D.skill_schedule||[]).filter(r=>r.day===today).map(r=>r.skill))];
+  return names;
+}
+function skxAddScheduleRow(day, di){
+  const skSel=document.getElementById('skx-add-skill-'+di);
+  const hrsInp=document.getElementById('skx-add-hours-'+di);
+  if(!skSel || !skSel.value) return;
+  const hours=parseFloat(hrsInp.value)||1;
+  D.skill_schedule.push({day, skill:skSel.value, hours});
+  S(); renderSkillSchedule(); renderSkillAnalytics();
+  if(day===skxTodayDayName() && typeof renderLearnCardTitle==='function') renderLearnCardTitle();
+}
+function skxUpdateScheduleHours(day, skill, value){
+  const row=(D.skill_schedule||[]).find(r=>r.day===day && r.skill===skill);
+  if(!row) return;
+  row.hours=Math.max(0, parseFloat(value)||0);
+  S(); renderSkillAnalytics();
+  const cnt=document.getElementById('skx-day-total-'+SKX_DAYS.indexOf(day));
+  if(cnt){
+    const dayTotal=Math.round((D.skill_schedule||[]).filter(r=>r.day===day).reduce((a,r)=>a+(parseFloat(r.hours)||0),0)*10)/10;
+    cnt.textContent=`⏱️ ${dayTotal}h wadarta`;
+  }
+}
+function skxDelScheduleRow(day, skill){
+  const idx=(D.skill_schedule||[]).findIndex(r=>r.day===day && r.skill===skill);
+  if(idx<0) return;
+  D.skill_schedule.splice(idx,1);
+  S(); renderSkillSchedule(); renderSkillAnalytics();
+  if(day===skxTodayDayName() && typeof renderLearnCardTitle==='function') renderLearnCardTitle();
+}
 function renderSkillSchedule(){
   const el=document.getElementById('skx-schedule');
   if(!el) return;
   skxDedupeSchedule();
+  const skOpts=getSkillsDef();
   el.innerHTML = `<div class="skx-step-grid">${SKX_DAYS.map((day,di)=>{
     const rows=D.skill_schedule.filter(r=>r.day===day);
     const dayTotal=Math.round(rows.reduce((a,r)=>a+(parseFloat(r.hours)||0),0)*10)/10;
     const color=SKX_STEP_COLORS[di%SKX_STEP_COLORS.length];
+    const rowsHtml = rows.length ? rows.map(r=>{
+      const skEsc=r.skill.replace(/'/g,"\\'");
+      return `<div class="skx-step-item">
+        <span>${r.skill}</span>
+        <span style="display:flex;align-items:center;gap:3px">
+          <input type="number" class="inp" min="0" step="0.5" value="${r.hours}" style="width:48px;padding:2px 4px;font-size:10.5px;text-align:center" onchange="skxUpdateScheduleHours('${day}','${skEsc}',this.value)">h
+          <button style="border:none;background:none;color:var(--text4);font-size:10px;cursor:pointer;padding:0 3px" onclick="skxDelScheduleRow('${day}','${skEsc}')">✕</button>
+        </span>
+      </div>`;
+    }).join('') : '<div class="an-empty" style="padding:2px 0;font-size:10px">Nasasho</div>';
+    const addRow = skOpts.length ? `<div style="display:flex;gap:4px;margin-top:6px">
+      <select id="skx-add-skill-${di}" class="sel" style="flex:1;font-size:10px;padding:3px 4px;min-width:0">
+        <option value="">+ Xirfad...</option>
+        ${skOpts.map(sk=>`<option value="${sk.name}">${sk.name}</option>`).join('')}
+      </select>
+      <input type="number" id="skx-add-hours-${di}" class="inp" value="1" min="0.5" step="0.5" style="width:40px;padding:3px 4px;font-size:10px">
+      <button style="border:none;background:${color};color:#fff;border-radius:6px;font-size:11px;padding:3px 9px;cursor:pointer;flex-shrink:0" onclick="skxAddScheduleRow('${day}',${di})">+</button>
+    </div>` : '';
     return `<div class="skx-step-card">
       <div class="skx-step-head" style="background:linear-gradient(135deg,${color},color-mix(in srgb,${color} 65%,#000))">
         <div class="skx-step-num">Maalinta ${di+1}</div>
         <div class="skx-step-day">${day}</div>
       </div>
       <div class="skx-step-body">
-        <div class="skx-step-total">⏱️ ${dayTotal}h wadarta</div>
-        ${rows.length ? rows.map(r=>`<div class="skx-step-item"><span>${r.skill}</span><span style="color:${color}">${r.hours}h</span></div>`).join('') : '<div class="an-empty" style="padding:2px 0;font-size:10px">Nasasho</div>'}
+        <div class="skx-step-total" id="skx-day-total-${di}">⏱️ ${dayTotal}h wadarta</div>
+        ${rowsHtml}
+        ${addRow}
       </div>
     </div>`;
   }).join('')}</div>`;
 }
 function renderSkillAnalytics(){
   if(!document.getElementById('skx-hero-ring')) return;
+  const tipsExtra={};
+  const skActive=getSkillsDef(), skAll=getAllSkillsDef();
+  const weeklyTotal=skxWeeklyTotal();
   const thisWeek=skxWeekDates(0), lastWeek=skxWeekDates(1);
   const totalThisWeek=Math.round(skxHoursInRange(null,thisWeek)*10)/10;
   const totalLastWeek=Math.round(skxHoursInRange(null,lastWeek)*10)/10;
-  const pctTarget=Math.min(Math.round(totalThisWeek/SKX_WEEKLY_TOTAL*100),100);
-  const remaining=Math.max(Math.round((SKX_WEEKLY_TOTAL-totalThisWeek)*10)/10,0);
+  const pctTarget=weeklyTotal>0 ? Math.min(Math.round(totalThisWeek/weeklyTotal*100),100) : 0;
+  const remaining=Math.max(Math.round((weeklyTotal-totalThisWeek)*10)/10,0);
 
   rcSetHTML('skx-hero-ring', svgHeroRing(pctTarget));
-  rcSetHTML('skx-hero-sub', `${totalThisWeek}h / ${SKX_WEEKLY_TOTAL}h la dhammeeyay`);
+  rcSetHTML('skx-hero-sub', `${totalThisWeek}h / ${weeklyTotal}h la dhammeeyay`);
   rcSetHTML('skx-streak', skxStreakDays());
   rcSetHTML('skx-remaining', remaining+'h');
   const daysSince=skxDaysSinceLastLog();
@@ -14397,21 +14557,24 @@ function renderSkillAnalytics(){
   const dailyEl=document.getElementById('skx-daily-chart');
   if(dailyEl) dailyEl.innerHTML = dailyTotals.some(v=>v>0) ? svgBarChart('skx-svg-daily',SKX_DAYS,dailyTotals,{color:RC_COLORS.purple,grid:true,showVal:true}) : '<div class="an-empty">Weli waxbarasho lama diiwaan gelin usbuucan</div>';
 
-  const allTimeHoursPerSkill = SKILLS_DEF.map(sk=>Math.round((D.learning||[]).filter(l=>l.skill===sk.name).reduce((a,l)=>a+(parseFloat(l.hours)||0),0)*10)/10);
+  // Wadarta-guud (all-time) — waxaa lagu daraa xirfadaha la tirtiray (inactive) si xogtoodii hore aysan u lumin
+  const allTimeHoursPerSkill = skAll.map(sk=>Math.round((D.learning||[]).filter(l=>l.skill===sk.name).reduce((a,l)=>a+(parseFloat(l.hours)||0),0)*10)/10);
   const pieEl=document.getElementById('skx-pie-chart');
   const pieTotal=allTimeHoursPerSkill.reduce((a,b)=>a+b,0);
-  if(pieEl) pieEl.innerHTML = pieTotal>0 ? svgDonutChart('skx-svg-pie',allTimeHoursPerSkill,SKILLS_DEF.map(s=>s.color),{showPct:true,centerText:pieTotal+'h'}) : '<div class="an-empty">Weli xog kuma filna</div>';
-  rcSetHTML('skx-pie-legend', pieTotal>0 ? rcLegend(SKILLS_DEF.map(s=>s.name),allTimeHoursPerSkill,SKILLS_DEF.map(s=>s.color)) : '');
+  if(pieEl) pieEl.innerHTML = pieTotal>0 ? svgDonutChart('skx-svg-pie',allTimeHoursPerSkill,skAll.map(s=>s.color),{showPct:true,centerText:pieTotal+'h'}) : '<div class="an-empty">Weli xog kuma filna</div>';
+  rcSetHTML('skx-pie-legend', pieTotal>0 ? rcLegend(skAll.map(s=>s.name),allTimeHoursPerSkill,skAll.map(s=>s.color)) : '');
 
-  const weekHoursPerSkill = SKILLS_DEF.map(sk=>Math.round(skxHoursInRange(sk.name,thisWeek)*10)/10);
+  // Usbuucan (bartilmaameedka) — kaliya xirfadaha firfircoon (active)
+  const weekHoursPerSkill = skActive.map(sk=>Math.round(skxHoursInRange(sk.name,thisWeek)*10)/10);
   const barEl=document.getElementById('skx-bar-chart');
-  if(barEl) barEl.innerHTML = weekHoursPerSkill.some(v=>v>0) ? svgBarChart('skx-svg-bar',SKILLS_DEF.map(s=>s.name),weekHoursPerSkill,{color:RC_COLORS.amber,grid:true,showVal:true}) : '<div class="an-empty">Weli xog kuma filna usbuucan</div>';
+  if(barEl) barEl.innerHTML = weekHoursPerSkill.some(v=>v>0) ? svgBarChart('skx-svg-bar',skActive.map(s=>s.name),weekHoursPerSkill,{color:RC_COLORS.amber,grid:true,showVal:true}) : '<div class="an-empty">Weli xog kuma filna usbuucan</div>';
 
-  const skillPcts = SKILLS_DEF.map((sk,i)=>({sk,hrs:weekHoursPerSkill[i],pct:Math.min(Math.round(weekHoursPerSkill[i]/sk.weeklyTarget*100),999)}));
+  if(skActive.length){
+  const skillPcts = skActive.map((sk,i)=>({sk,hrs:weekHoursPerSkill[i],pct:Math.min(Math.round(weekHoursPerSkill[i]/(sk.weeklyTarget||1)*100),999)}));
   const sortedByHrs=[...skillPcts].sort((a,b)=>b.hrs-a.hrs);
   const top=sortedByHrs[0], bottom=sortedByHrs[sortedByHrs.length-1];
-  const lastWeekHoursPerSkill = SKILLS_DEF.map(sk=>Math.round(skxHoursInRange(sk.name,lastWeek)*10)/10);
-  const topIdx=SKILLS_DEF.indexOf(top.sk);
+  const lastWeekHoursPerSkill = skActive.map(sk=>Math.round(skxHoursInRange(sk.name,lastWeek)*10)/10);
+  const topIdx=skActive.indexOf(top.sk);
   const topDelta=skxDelta(top.hrs, lastWeekHoursPerSkill[topIdx]);
   const topEl=document.getElementById('skx-top-skill');
   if(topEl) topEl.innerHTML = `<div class="an-card-title">🏆 Xirfadda Ugu Waqtiga Badan</div>
@@ -14430,13 +14593,17 @@ function renderSkillAnalytics(){
       <div style="font-size:10.5px;color:var(--text3);margin-top:2px">${botReason}</div>
       <div style="font-size:10.5px;color:var(--purple);margin-top:6px">💡 Isku day inaad u qoondeyso 15–20 daqiiqo maalinle si aad ugu dhaqaaqdo</div>
     </div>`;
+  tipsExtra.top=top; tipsExtra.bottom=bottom;
+  } else {
+    ['skx-top-skill','skx-bottom-skill'].forEach(id=>{ const e=document.getElementById(id); if(e) e.innerHTML='<div class="an-empty">Weli xirfad ma jirto</div>'; });
+  }
 
   const trend12=skxWeeklyTrend12();
   const trendLbls=Array.from({length:12},(_,i)=>i===11?'Hadda':(12-i)+' wk');
   const trendEl=document.getElementById('skx-trend12-chart');
   if(trendEl) trendEl.innerHTML = trend12.some(v=>v>0) ? svgLineChart('skx-svg-trend12',trendLbls,trend12,{color:RC_COLORS.purple}) : '<div class="an-empty">Weli xog kuma filna 12 usbuuc</div>';
 
-  const bestSkillAllTime = SKILLS_DEF.map((sk,i)=>({sk,hrs:allTimeHoursPerSkill[i]})).sort((a,b)=>b.hrs-a.hrs)[0];
+  const bestSkillAllTime = skAll.map((sk,i)=>({sk,hrs:allTimeHoursPerSkill[i]})).sort((a,b)=>b.hrs-a.hrs)[0];
   const dayTotalsMap={}; (D.learning||[]).forEach(l=>{ dayTotalsMap[l.date]=(dayTotalsMap[l.date]||0)+(parseFloat(l.hours)||0); });
   let mostProdDay=null, mostProdHrs=0;
   Object.entries(dayTotalsMap).forEach(([d,h])=>{ if(h>mostProdHrs){mostProdHrs=h; mostProdDay=d;} });
@@ -14449,11 +14616,13 @@ function renderSkillAnalytics(){
   </div>`);
 
   const tips=[];
-  tips.push({ic:'⏱️', txt:`Usbuucan waxaad wadatay ${totalThisWeek}h oo ka mid ah ${SKX_WEEKLY_TOTAL}h ee bartilmaameedka (${pctTarget}%).`});
+  tips.push({ic:'⏱️', txt:`Usbuucan waxaad wadatay ${totalThisWeek}h oo ka mid ah ${weeklyTotal}h ee bartilmaameedka (${pctTarget}%).`});
   if(cmpDelta.cls==='up') tips.push({ic:'🎉', txt:`Waad kordhisay waqtiga waxbarashada ${cmpDelta.txt} marka loo eego usbuucii hore — shaqo fiican!`});
   else if(cmpDelta.cls==='down') tips.push({ic:'💪', txt:`Waqtigaagu wuxuu hoos u dhacay ${cmpDelta.txt} — isku day inaad dib u soo celiso xawaaraha.`});
-  tips.push({ic:'🏆', txt:`${top.sk.name} ayaad ugu badan waqti u qoondaysay usbuucan (${top.hrs}h).`});
-  if(bottom.hrs < bottom.sk.weeklyTarget) tips.push({ic:'📉', txt:`${bottom.sk.name} waxay u baahan tahay dheeraad — kaliya ${bottom.hrs}h ayaad gaadhay ${bottom.sk.weeklyTarget}h ee bartilmaameedka.`});
+  if(tipsExtra.top){
+    tips.push({ic:'🏆', txt:`${tipsExtra.top.sk.name} ayaad ugu badan waqti u qoondaysay usbuucan (${tipsExtra.top.hrs}h).`});
+    if(tipsExtra.bottom.hrs < tipsExtra.bottom.sk.weeklyTarget) tips.push({ic:'📉', txt:`${tipsExtra.bottom.sk.name} waxay u baahan tahay dheeraad — kaliya ${tipsExtra.bottom.hrs}h ayaad gaadhay ${tipsExtra.bottom.sk.weeklyTarget}h ee bartilmaameedka.`});
+  }
   if(pctTarget>=100) tips.push({ic:'🥇', txt:'Waad gaadhay bartilmaameedka usbuuca oo dhan — waad mahadsan tahay dadaalkaaga!'});
   else tips.push({ic:'📌', txt:`${remaining}h ayaa ku harsan si aad u gaadho bartilmaameedka usbuuca.`});
   rcSetHTML('skx-ai-coach', tips.map(t=>`<div class="an-insight-row"><div class="an-insight-em">${t.ic}</div><div class="an-insight-body"><div class="an-insight-a">${t.txt}</div></div></div>`).join(''));
@@ -14475,6 +14644,105 @@ function saveLearn(){
 renderSkillGrid();
 renderSkillSchedule();
 renderSkillAnalytics();
+
+/* ── MAAMULKA XIRFADAHA — ku dar/wax ka beddel/tirtir xirfad, oo ay la
+   socoto dropdown-ka "Wax-barasho Cusub Diiwaangeli" iyo title-ka dynamic-ka
+   ah ee "{Xirfad} – Qorshe Maalinle" ═══════════════════════════════ */
+function renderLearnSkillDropdown(){
+  const sel=document.getElementById('learn-skill'); if(!sel) return;
+  const prev=sel.value;
+  const opts=getSkillsDef();
+  sel.innerHTML = opts.length ? opts.map(sk=>`<option value="${sk.name}">${sk.name}</option>`).join('') : '<option value="">— Xirfad ma jirto —</option>';
+  if(opts.some(sk=>sk.name===prev)) sel.value=prev;
+  else {
+    const todayNames=skxTodaySkillNames().filter(n=>opts.some(sk=>sk.name===n));
+    if(todayNames.length) sel.value=todayNames[0];
+  }
+}
+function renderLearnCardTitle(){
+  const el=document.getElementById('learn-card-title'); if(!el) return;
+  const names=skxTodaySkillNames();
+  el.textContent = names.length ? `📝 ${names[0]} – Qorshe Maalinle` : '📝 Wax-barasho Cusub Diiwaangeli';
+  renderLearnSkillDropdown();
+}
+function skxAddSkill(){
+  const nameInp=document.getElementById('skx-new-name'), iconInp=document.getElementById('skx-new-icon');
+  const colorInp=document.getElementById('skx-new-color'), targetInp=document.getElementById('skx-new-target');
+  const name=(nameInp&&nameInp.value||'').trim();
+  if(!name){ alert('Fadlan geli magaca xirfadda!'); return; }
+  const icon=(iconInp&&iconInp.value||'').trim();
+  const color=(colorInp&&colorInp.value)||'#64748B';
+  const target=parseFloat(targetInp&&targetInp.value)||5;
+  D.skills_def.push({id:'sk_'+Date.now(), name:(icon?icon+' ':'⭐ ')+name, color, weeklyTarget:target, active:true});
+  S();
+  renderSkillGrid(); renderSkillSchedule(); renderSkillAnalytics(); renderLearnCardTitle();
+  refreshManageSkillsModal();
+}
+function skxUpdateField(id, field, value){
+  const sk=(D.skills_def||[]).find(s=>s.id===id); if(!sk) return;
+  sk[field] = field==='weeklyTarget' ? (parseFloat(value)||0) : value;
+  S();
+  renderSkillGrid(); renderSkillSchedule(); renderSkillAnalytics(); renderLearnCardTitle();
+}
+function skxDeleteSkill(id){
+  const sk=(D.skills_def||[]).find(s=>s.id===id); if(!sk) return;
+  if(!confirm(`"${sk.name}" ka saar liiska xirfadaha firfircoon? (Xogtii hore ee jadwalka iyo waxbarashada lama tirtiro, waana la soo celin karaa mar dambe)`)) return;
+  sk.active=false; S();
+  renderSkillGrid(); renderSkillSchedule(); renderSkillAnalytics(); renderLearnCardTitle();
+  refreshManageSkillsModal();
+}
+function skxRestoreSkill(id){
+  const sk=(D.skills_def||[]).find(s=>s.id===id); if(!sk) return;
+  sk.active=true; S();
+  renderSkillGrid(); renderSkillSchedule(); renderSkillAnalytics(); renderLearnCardTitle();
+  refreshManageSkillsModal();
+}
+function manageSkillsBodyHtml(){
+  const active=(D.skills_def||[]).filter(s=>s.active!==false);
+  const inactive=(D.skills_def||[]).filter(s=>s.active===false);
+  const row=sk=>`<div class="card" style="margin-bottom:10px;padding:12px;background:var(--bg)">
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+      <span style="width:18px;height:18px;border-radius:5px;background:${sk.color};flex:0 0 18px;border:1px solid var(--border)"></span>
+      <input class="inp" style="flex:1" value="${wbEsc(sk.name)}" oninput="skxUpdateField('${sk.id}','name',this.value)">
+      <button class="btn-sm" style="padding:4px 8px;color:var(--red)" onclick="skxDeleteSkill('${sk.id}')">🗑️</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <input class="inp" type="color" value="${sk.color}" style="padding:2px;height:34px" oninput="skxUpdateField('${sk.id}','color',this.value)">
+      <input class="inp" type="number" min="0" step="0.5" value="${sk.weeklyTarget}" placeholder="Bartilmaameed h/usbuuc" oninput="skxUpdateField('${sk.id}','weeklyTarget',this.value)">
+    </div>
+  </div>`;
+  const inactiveRow=sk=>`<div class="card" style="margin-bottom:10px;padding:10px 12px;background:var(--bg);opacity:.65;display:flex;align-items:center;gap:8px">
+    <span style="flex:1;font-size:12.5px">${wbEsc(sk.name)}</span>
+    <button class="btn-sm" onclick="skxRestoreSkill('${sk.id}')">↺ Soo celi</button>
+  </div>`;
+  return `
+    <div style="font-size:13px;font-weight:800;margin-bottom:8px">Xirfadaha Firfircoon</div>
+    ${active.length ? active.map(row).join('') : '<div class="empty">Xirfad firfircoon ma jirto</div>'}
+    <div class="card" style="border:2px dashed var(--border);background:var(--bg);margin-bottom:20px">
+      <div class="card-head"><div class="card-title" style="font-size:12.5px">➕ Xirfad cusub ku dar</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <input class="inp" id="skx-new-name" placeholder="Magaca (tusaale: English)">
+        <input class="inp" id="skx-new-icon" placeholder="Emoji (⭐)" maxlength="4">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <input class="inp" type="color" id="skx-new-color" value="#64748B" style="padding:2px;height:34px">
+        <input class="inp" type="number" id="skx-new-target" placeholder="Bartilmaameed h/usbuuc" value="5" min="0" step="0.5">
+      </div>
+      <button class="btn-p" style="margin-top:0" onclick="skxAddSkill()">➕ Ku dar Xirfad</button>
+    </div>
+    ${inactive.length ? `<div style="font-size:13px;font-weight:800;margin-bottom:8px">La Tirtiray (dib u celi)</div>${inactive.map(inactiveRow).join('')}` : ''}
+    <button class="btn-g" style="width:100%;justify-content:center" onclick="closeGenModal()">✕ Xidh</button>
+  `;
+}
+function refreshManageSkillsModal(){
+  const ov=document.getElementById('gen-modal-overlay');
+  const t=document.getElementById('gen-modal-title');
+  if(ov && ov.style.display==='flex' && t && t.textContent.includes('Xirfadaha')){
+    document.getElementById('gen-modal-body').innerHTML=manageSkillsBodyHtml();
+  }
+}
+function openManageSkills(){ openGenModal('⚙️ Maamul Xirfadaha', manageSkillsBodyHtml()); }
+renderLearnCardTitle();
 
 
 /* ═══════════════════════════════════
@@ -16314,7 +16582,8 @@ function calculateDailyScore(){
   const sunDone = document.querySelectorAll('.sun-i.done').length;
   score+=Math.min(sunDone,12); total+=12;
   const habDone = document.querySelectorAll('.hc.done').length;
-  score+=habDone; total+=5;
+  const habMax = (typeof habActiveDefs==='function') ? (habActiveDefs('good').length+habActiveDefs('bad').length) : 5;
+  score+=habDone; total+=(habMax||5);
   const jimDone = (typeof JIM_ITEMS!=='undefined') ? JIM_ITEMS.filter(it=>D.jim_check&&D.jim_check[it.key]&&D.jim_check[it.key].done).length : 0;
   score+=jimDone; total+=(typeof JIM_ITEMS!=='undefined'?JIM_ITEMS.length:5);
   const quranJuz = (D.quran_xifdi&&D.quran_xifdi.juz)||(D.quran&&D.quran.juz)||0;
@@ -16344,7 +16613,7 @@ function syncDailyPoints(){
   if(jimNow>pt.jimicsi){ gained+=(jimNow-pt.jimicsi)*2; pt.jimicsi=jimNow; }
   const nadNow = Object.values(D.nad||{}).filter(Boolean).length;
   if(nadNow>pt.nad){ gained+=(nadNow-pt.nad)*1; pt.nad=nadNow; }
-  const taskNow = document.querySelectorAll('#task-list .task.done').length;
+  const taskNow = document.querySelectorAll('#task-list .hawl-row.done').length;
   if(taskNow>pt.tasks){ gained+=(taskNow-pt.tasks)*2; pt.tasks=taskNow; }
   if(gained>0) awardPoints(gained); else S();
 }
@@ -16602,6 +16871,44 @@ const SAL_META={
 if(!D.sal_state) D.sal_state={};
 if(!D.sal_points) D.sal_points=0;
 
+/* ── MAAMULKA XASUUSINTA SALAADAHA — waxaa la maamuli karaa kaliya WAQTIGA
+   xasuusinta (on/off + daqiiqo ka hor); Salaadaha 5-ta qudhoodu (SAL_META)
+   iyo Adkaarada asalka ah waa cibaado go'an, lagama taaban. ── */
+if(!D.sal_reminder_settings) D.sal_reminder_settings={};
+function salReminderSetting(k){
+  const s=D.sal_reminder_settings[k];
+  return { on: (s&&s.on!==undefined) ? s.on : true, before: (s&&s.before!==undefined) ? s.before : 5 };
+}
+function salUpdateReminderSetting(k, field, value){
+  if(!D.sal_reminder_settings[k]) D.sal_reminder_settings[k]={on:true, before:5};
+  D.sal_reminder_settings[k][field] = field==='on' ? !!value : Math.max(0, parseInt(value)||0);
+  S();
+}
+function manageSalahRemindersBodyHtml(){
+  const row=k=>{
+    const meta=SAL_META[k], set=salReminderSetting(k);
+    return `<div class="card" style="margin-bottom:10px;padding:12px;background:var(--bg);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div style="font-size:20px">${meta.em}</div>
+      <div style="flex:1;min-width:80px">
+        <div style="font-weight:700;font-size:13px">${meta.name}</div>
+        <div style="font-size:10.5px;color:var(--text3)">${meta.t}</div>
+      </div>
+      <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer">
+        <input type="checkbox" ${set.on?'checked':''} onchange="salUpdateReminderSetting('${k}','on',this.checked)"> Shid
+      </label>
+      <div style="display:flex;align-items:center;gap:5px">
+        <input class="inp" type="number" min="0" max="120" value="${set.before}" style="width:52px;padding:4px 6px;font-size:11px;text-align:center" onchange="salUpdateReminderSetting('${k}','before',this.value)">
+        <span style="font-size:10.5px;color:var(--text3)">daqiiqo ka hor</span>
+      </div>
+    </div>`;
+  };
+  return `
+    <div style="font-size:11.5px;color:var(--text3);margin-bottom:12px">Waqtiyada salaadaha qudhooda (SAL_META) iyo adkaarada asalka ah lama beddeli karo halkan — waxaa kaliya la maamulayaa marka iyo in la xasuusiyo.</div>
+    ${SAL_KEYS.map(row).join('')}
+    <button class="btn-g" style="width:100%;justify-content:center;margin-top:6px" onclick="closeGenModal()">✕ Xidh</button>
+  `;
+}
+function openManageSalahReminders(){ openGenModal('⏰ Maamul Xasuusinta Salaadaha', manageSalahRemindersBodyHtml()); }
 
 /* ══════════════════════════════════════════
    GENERIC MODAL ENGINE
@@ -19704,8 +20011,8 @@ function buildSearchIndex(){
     title:t.text, sub:'Mashruuca A · '+(t.done?'Dhamme':'Socda'),
     keywords:t.text.toLowerCase()
   }));
-  document.querySelectorAll('#task-list .task').forEach(el => {
-    const nm = el.querySelector('.task-nm')?.textContent||'';
+  document.querySelectorAll('#task-list .hawl-row').forEach(el => {
+    const nm = el.querySelector('.hawl-title')?.textContent||'';
     idx.push({type:'task', id:'hawlaha', ic:'✅', title:nm, sub:'Hawlaha', keywords:nm.toLowerCase()});
   });
 
@@ -20714,7 +21021,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     // Fure joogto ah oo ka soo jeeda onclick-ka gaarka ah ee shayga (waa mid gaar u ah shay kasta)
     const itemKey = (el.getAttribute('onclick')||'').replace(/\s+/g,'');
     let label = '';
-    const labelEl = el.querySelector('.sal-n,.hc-n,.task-nm,.nad-nm,.nad-info,span');
+    const labelEl = el.querySelector('.sal-n,.hc-n,.task-nm,.hawl-title,.nad-nm,.nad-info,span');
     label = (labelEl ? labelEl.textContent : el.textContent || '').trim().replace(/\s+/g,' ').slice(0,60);
     if(!label) label = 'Waxqabad la sameeyay';
     setTimeout(()=>{
@@ -22359,6 +22666,21 @@ function agUrlBase64ToUint8Array(base64String){
   const outputArray = new Uint8Array(rawData.length);
   for(let i=0;i<rawData.length;i++) outputArray[i] = rawData.charCodeAt(i);
   return outputArray;
+}
+
+// Ka jawaab su'aasha Service Worker-ka marka subscription-ka push-ku
+// isbeddelo (pushsubscriptionchange, ku jira sw.js) — SW-gu isagu ma heli
+// karo xogta Supabase Auth session-ka, ee wuxuu weydiiyaa bogga (page-ka)
+// user_id-ka hadda soo galay si uu ugu kaydiyo saf cusub oo push_subscriptions ah.
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.addEventListener('message', (event)=>{
+    if(event.data && event.data.type==='HIGSAD_GET_USER_ID' && event.ports && event.ports[0]){
+      try{
+        const uid = typeof sbSyncId==='function' ? sbSyncId() : null;
+        event.ports[0].postMessage({ userId: uid });
+      }catch(e){ event.ports[0].postMessage({ userId: null }); }
+    }
+  });
 }
 
 // PUSH DHAB AH (Web Push/VAPID) — is-diiwaan-geliya (subscribe) browser-kan si
